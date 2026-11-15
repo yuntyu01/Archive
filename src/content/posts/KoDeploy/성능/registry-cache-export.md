@@ -1,5 +1,5 @@
 ---
-title: "레지스트리 캐시 적용기 - 번 시간의 71%를 도로 가져간 cache export 떼어내기"
+title: "레지스트리 캐시 적용기 - cache export를 배포 대기에서 분리하기"
 date: "2026-07-20"
 description: "레지스트리 캐시를 붙이기 전에 캐시를 올리는 비용부터 쟀습니다. 진짜 비용은 cache export였고, 배포가 기다리는 대상을 바꿔 떼어냈습니다."
 tags: ["BuildKit", "레지스트리 캐시", "CI/CD"]

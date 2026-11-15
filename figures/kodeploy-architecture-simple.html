@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<title>KoDeploy 아키텍처 개요 (포트폴리오 그림)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<style>
+/* 포트폴리오 개요 그림 - 요청 경로, 배포 경로, 테넌트 격리만 그린다.
+   세부(권한 수, v1 경로, core가 만드는 것과 Argo CD가 만드는 것, master 노드, 모니터링)는
+   케이스3과 아키텍처 시리즈(public/architecture/)에 있다. 자세한 원본은 kodeploy-architecture.html.
+   1320px 고정 폭으로 그려서 스크린샷(배율 1.5) → webp → 포폴 "KoDeploy 아키텍처 다이어그램" img에 base64로 넣는다 */
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#fff;width:1320px}
+svg{display:block;width:1320px;height:auto}
+</style>
+</head>
+<body>
+<svg viewBox="0 0 1320 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="KoDeploy 아키텍처 개요: 사용자 요청은 Cloudflare를 거쳐 OCI 위 쿠버네티스 클러스터의 Envoy Gateway로 들어와 테넌트 네임스페이스의 앱으로 간다. 배포는 Core API가 Builder에 빌드를 맡기고, Builder가 GitHub에서 소스를 받아 이미지를 올린 뒤 GitOps 저장소에 값을 커밋하면, Argo CD가 그 상태를 테넌트 네임스페이스에 적용한다.">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#3f4650"/></marker>
+    <marker id="ahd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#9aa3ae"/></marker>
+    <marker id="ahg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#2f9e63"/></marker>
+  </defs>
+  <style>
+    text{font-family:Pretendard,-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+    .z{fill:none;stroke:#cdd2d9;stroke-width:1.4}
+    .zk{fill:none;stroke:#5b84d6;stroke-width:1.6}
+    .zc{fill:none;stroke:#f38020;stroke-width:1.6}
+    .zl{font-size:17px;font-weight:700;fill:#1f2328}
+    .zlk{font-size:17px;font-weight:700;fill:#4a74c9}
+    .zlc{font-size:17px;font-weight:700;fill:#e0701a}
+    .zs{font-size:13px;font-weight:500;fill:#828d9a}
+    .b{fill:#fff;stroke:#d7dbe1;stroke-width:1.2}
+    .bt{fill:#f7f8fa;stroke:#d7dbe1;stroke-width:1.2}
+    .chip{fill:#f4f5f7;stroke:none}
+    .t{font-size:16px;font-weight:700;fill:#1f2328}
+    .tc{font-size:14.5px;font-weight:700;fill:#1f2328}
+    .s{font-size:13px;font-weight:500;fill:#828d9a}
+    .m{text-anchor:middle}
+    .e{text-anchor:end}
+    .a{fill:none;stroke:#3f4650;stroke-width:1.5;marker-end:url(#ah)}
+    .a2{fill:none;stroke:#3f4650;stroke-width:1.5;marker-end:url(#ah);marker-start:url(#ah)}
+    .ad{fill:none;stroke:#9aa3ae;stroke-width:1.4;stroke-dasharray:5 4;marker-end:url(#ahd)}
+    .ag{fill:none;stroke:#2f9e63;stroke-width:2;marker-end:url(#ahg)}
+    .al{font-size:12.5px;font-weight:600;fill:#3f4650;paint-order:stroke;stroke:#fff;stroke-width:4px;stroke-linejoin:round}
+    .alg{font-size:12.5px;font-weight:700;fill:#23784a;paint-order:stroke;stroke:#fff;stroke-width:4px;stroke-linejoin:round}
+    .ald{font-size:12.5px;font-weight:600;fill:#828d9a;paint-order:stroke;stroke:#fff;stroke-width:4px;stroke-linejoin:round}
+    .lg{font-size:13px;font-weight:500;fill:#3f4650}
+    .ic{fill:none;stroke:#1f2328;stroke-width:1.6}
+  </style>
+
+  <!-- 사용자 -->
+  <circle class="ic" cx="50" cy="138" r="10"/><path class="ic" d="M33 171a17 15 0 0 1 34 0"/>
+  <text class="t m" x="50" y="197">사용자</text>
+  <path class="a" d="M74 168H111"/>
+
+  <!-- Cloudflare -->
+  <rect class="zc" x="96" y="100" width="186" height="120" rx="16"/>
+  <text class="zlc" x="114" y="128">Cloudflare</text>
+  <rect class="b" x="111" y="140" width="156" height="58" rx="10"/>
+  <text class="t m" x="189" y="164">DNS, TLS, WAF</text><text class="s m" x="189" y="184">커스텀 도메인</text>
+  <path class="a" d="M267 168H350"/>
+
+  <!-- Oracle Cloud -->
+  <rect class="z" x="306" y="50" width="726" height="530" rx="18"/>
+  <text class="zl" x="326" y="78">Oracle Cloud</text><text class="zs" x="448" y="78">ARM 노드 3대</text>
+
+  <!-- 쿠버네티스 클러스터 -->
+  <rect class="zk" x="328" y="95" width="684" height="468" rx="16"/>
+  <text class="zlk" x="348" y="123">Kubernetes 클러스터</text><text class="zs" x="514" y="123">kubeadm, Calico, Gateway API</text>
+
+  <rect class="b" x="352" y="140" width="180" height="58" rx="10"/>
+  <text class="t m" x="442" y="164">Envoy Gateway</text><text class="s m" x="442" y="184">TLS 종료, 호스트 라우팅</text>
+
+  <rect class="b" x="602" y="140" width="190" height="58" rx="10"/>
+  <text class="t m" x="697" y="164">Core API</text><text class="s m" x="697" y="184">앱 관리, 배포 요청</text>
+
+  <rect class="b" x="602" y="250" width="190" height="58" rx="10"/>
+  <text class="t m" x="697" y="274">Builder (Go)</text><text class="s m" x="697" y="294">BuildKit Job으로 빌드</text>
+
+  <rect class="b" x="822" y="345" width="170" height="58" rx="10"/>
+  <text class="t m" x="907" y="369">Argo CD</text><text class="s m" x="907" y="389">외부 노출 없음</text>
+
+  <!-- 테넌트 네임스페이스 -->
+  <rect class="bt" x="352" y="445" width="640" height="96" rx="12"/>
+  <text class="t" x="370" y="472">테넌트 네임스페이스</text>
+  <text class="s e" x="974" y="472">앱마다 하나, PSS restricted, NetworkPolicy 격리</text>
+  <rect class="b" x="370" y="488" width="100" height="36" rx="8"/><text class="tc m" x="420" y="511">앱 서버</text>
+  <rect class="b" x="480" y="488" width="108" height="36" rx="8"/><text class="tc m" x="534" y="511">정적 사이트</text>
+  <rect class="b" x="598" y="488" width="156" height="36" rx="8"/><text class="tc m" x="676" y="511">MySQL / PostgreSQL</text>
+  <rect class="b" x="764" y="488" width="80" height="36" rx="8"/><text class="tc m" x="804" y="511">Redis</text>
+  <rect class="b" x="854" y="488" width="120" height="36" rx="8"/><text class="tc m" x="914" y="511">exec 게이트웨이</text>
+
+  <!-- GitHub -->
+  <rect class="z" x="1050" y="100" width="252" height="236" rx="16"/>
+  <text class="zl" x="1068" y="128">GitHub</text>
+  <rect class="b" x="1065" y="140" width="222" height="58" rx="10"/>
+  <text class="t m" x="1176" y="164">사용자 저장소, GHCR</text><text class="s m" x="1176" y="184">앱 소스, 앱 이미지</text>
+  <rect class="b" x="1065" y="250" width="222" height="72" rx="10"/>
+  <text class="t m" x="1176" y="274">GitOps 저장소</text>
+  <text class="s m" x="1176" y="293">kodeploy-apps: 앱별 값</text>
+  <text class="s m" x="1176" y="311">kodeploy-charts: 공통 차트</text>
+
+  <!-- 흐름 -->
+  <!-- 요청: Envoy → 앱, Envoy → Core -->
+  <path class="a" d="M442 198V443"/>
+  <text class="al" x="452" y="330">앱 트래픽</text>
+  <path class="a" d="M532 168H600"/>
+  <text class="al m" x="567" y="158">API</text>
+
+  <!-- 배포: Core → Builder → GitHub → Argo CD → 테넌트 -->
+  <path class="a" d="M697 198V248"/>
+  <text class="al" x="706" y="228">빌드 요청</text>
+  <path class="a2" d="M1063 168H862V268H794"/>
+  <text class="al m" x="962" y="160">clone, push</text>
+  <path class="a" d="M792 292H1063"/>
+  <text class="al m" x="930" y="284">값 커밋</text>
+  <path class="a" d="M1176 322V374H994"/>
+  <text class="al m" x="1050" y="366">pull</text>
+  <path class="ag" d="M907 403V443"/>
+  <text class="alg e" x="897" y="428">적용 (SSA, prune, selfHeal)</text>
+
+  <!-- core가 테넌트 ns에 직접 하는 일 -->
+  <path class="ad" d="M612 198V222H567V443"/>
+  <text class="ald" x="576" y="390">Secret 쓰기, exec 요청</text>
+
+  <!-- 범례 -->
+  <path class="a" d="M1066 400H1104"/><text class="lg" x="1114" y="404">요청, 데이터 흐름</text>
+  <path class="ag" d="M1066 430H1104"/><text class="lg" x="1114" y="434">Argo CD가 Git 상태로 적용</text>
+  <path class="ad" d="M1066 460H1104"/><text class="lg" x="1114" y="464">core가 직접 (테넌트 ns만)</text>
+</svg>
+</body></html>

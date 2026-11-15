@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<title>포트폴리오 Argo CD 전후</title>
+<!-- 렌더: 1000x296, deviceScaleFactor 2 → webp로 바꿔 public/PORTFOLIO/index.html의 Argo CD 사례에 data URI로 넣는다 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<style>
+  html,body{margin:0;padding:0;background:#fff}
+  svg{display:block}
+  text{font-family:Pretendard,"Noto Sans CJK KR",sans-serif}
+  .b{fill:#fff;stroke:#d7dbe1;stroke-width:1.3}
+  .t{font-size:17px;font-weight:700;fill:#1f2328;text-anchor:middle}
+  .s{font-size:13.5px;font-weight:500;fill:#828d9a;text-anchor:middle}
+  .sr{font-size:13.5px;font-weight:700;fill:#d1495b;text-anchor:middle}
+  .sk{font-size:13.5px;font-weight:700;fill:#1f2328;text-anchor:middle}
+  .row{font-size:15px;font-weight:800;fill:#1f2328}
+  .zr{fill:none;stroke:#d1495b;stroke-width:1.3;stroke-dasharray:5 4}
+  .zg{fill:none;stroke:#b9c0cb;stroke-width:1.3;stroke-dasharray:5 4}
+  .zlr{font-size:13.5px;font-weight:700;fill:#d1495b}
+  .zl{font-size:13.5px;font-weight:700;fill:#1f2328}
+  .a{fill:none;stroke:#3f4650;stroke-width:1.5;marker-end:url(#ah)}
+  .ar{fill:none;stroke:#d1495b;stroke-width:1.6;marker-end:url(#ahr)}
+  .ag{fill:none;stroke:#2f9e63;stroke-width:1.9;marker-end:url(#ahg)}
+  .l{font-size:13.5px;font-weight:600;fill:#3f4650;text-anchor:middle;paint-order:stroke;stroke:#fff;stroke-width:5px;stroke-linejoin:round}
+  .lr{font-size:13.5px;font-weight:700;fill:#d1495b;text-anchor:middle;paint-order:stroke;stroke:#fff;stroke-width:5px;stroke-linejoin:round}
+  .lg{font-size:13.5px;font-weight:700;fill:#2f9e63;text-anchor:middle;paint-order:stroke;stroke:#fff;stroke-width:5px;stroke-linejoin:round}
+  .sep{stroke:#e4e7eb;stroke-width:1}
+</style>
+</head><body>
+<svg id="fig" width="1000" height="296" viewBox="0 0 1000 296" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#3f4650"/></marker>
+    <marker id="ahr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#d1495b"/></marker>
+    <marker id="ahg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#2f9e63"/></marker>
+  </defs>
+  <rect width="1000" height="296" fill="#fff"/>
+
+  <text class="row" x="20" y="96">Before</text>
+  <text class="row" x="20" y="226">After</text>
+  
+  <!-- 외부 요청을 받는 곳 -->
+  <rect class="zr" x="84" y="12" width="186" height="270" rx="8"/>
+  <text class="zlr" x="100" y="36">외부 요청을 받는 곳</text>
+
+  <!-- Before -->
+  <rect class="b" x="94" y="56" width="160" height="70" rx="8"/>
+  <text class="t" x="174" y="86">core</text>
+  <text class="sr" x="174" y="109">전역 권한 35개</text>
+
+  <path class="ar" d="M256 91H836"/>
+  <text class="l" x="545" y="81">K8s API 직접 호출</text>
+  <text class="lr" x="545" y="115">create · patch · replace</text>
+
+  <rect class="b" x="840" y="56" width="140" height="70" rx="8"/>
+  <text class="t" x="910" y="86">테넌트 ns</text>
+  <text class="s" x="910" y="109">앱 · DB</text>
+
+  <!-- After -->
+  <rect class="b" x="94" y="186" width="160" height="70" rx="8"/>
+  <text class="t" x="174" y="216">core</text>
+  <text class="sk" x="174" y="239">전역 권한 6개</text>
+
+  <path class="a" d="M256 221H336"/>
+  <text class="l" x="296" y="211">값 커밋</text>
+
+  <rect class="b" x="340" y="186" width="150" height="70" rx="8"/>
+  <text class="t" x="415" y="216">Git 저장소</text>
+  <text class="s" x="415" y="239">앱 값 · 차트</text>
+
+  <rect class="zg" x="560" y="150" width="210" height="132" rx="8"/>
+  <text class="zl" x="576" y="174">외부 요청이 닿지 않는 곳</text>
+
+  <path class="a" d="M492 221H586"/>
+  <text class="l" x="535" y="211">읽기</text>
+
+  <rect class="b" x="590" y="186" width="164" height="70" rx="8"/>
+  <text class="t" x="672" y="216">Argo CD</text>
+  <text class="s" x="672" y="239">SSA · prune · selfHeal</text>
+
+  <path class="ag" d="M756 221H836"/>
+  <text class="lg" x="796" y="211">적용</text>
+
+  <rect class="b" x="840" y="186" width="140" height="70" rx="8"/>
+  <text class="t" x="910" y="216">테넌트 ns</text>
+  <text class="s" x="910" y="239">앱 · DB</text>
+</svg>
+</body></html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<title>Argo CD 배포 흐름</title>
+<!-- 렌더: 1150x790, deviceScaleFactor 2 → public/images/posts/argocd-declarative-deploy/02.png -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<style>
+  html,body{margin:0;padding:0;background:#f6f6f6}
+  svg{display:block}
+  text{font-family:Pretendard,"Noto Sans CJK KR",sans-serif}
+  .ind{fill:#6d73ce}
+  .gry{fill:#666666}
+  .pur{fill:#c075e7}
+  .rep{fill:#ffffff;stroke:#666666;stroke-width:2}
+  .t{font-size:28px;font-weight:600;fill:#fff;text-anchor:middle}
+  .s{font-size:19px;font-weight:500;fill:rgba(255,255,255,.88);text-anchor:middle}
+  .tk{font-size:23px;font-weight:600;fill:#000;text-anchor:middle}
+  .sk{font-size:17px;font-weight:500;fill:#666;text-anchor:middle}
+  .band{fill:#e4e4e4}
+  .bt{font-size:20px;font-weight:700;fill:#333}
+  .box{fill:none;stroke:#666;stroke-width:1.6;stroke-dasharray:3 4}
+  .zr{fill:none;stroke:#e54e4f;stroke-width:1.8;stroke-dasharray:6 5}
+  .bl{font-size:20px;font-weight:700;fill:#000}
+  .blr{font-size:20px;font-weight:700;fill:#e54e4f}
+  .a{fill:none;stroke:#000;stroke-width:2.4;marker-end:url(#ah)}
+  .ad{fill:none;stroke:#777;stroke-width:2;stroke-dasharray:7 6;marker-end:url(#ahd)}
+  .l{font-size:19px;font-weight:600;fill:#000}
+  .ld{font-size:18px;font-weight:500;fill:#555}
+  .mk{paint-order:stroke;stroke:#f6f6f6;stroke-width:8px;stroke-linejoin:round}
+  .m{text-anchor:middle}
+</style>
+</head><body>
+<svg id="fig" width="1150" height="790" viewBox="0 0 1150 790" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="ah" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M1 1L10.5 6L1 11" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="ahd" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M1 1L10.5 6L1 11" fill="none" stroke="#777" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <rect width="1150" height="790" fill="#f6f6f6"/>
+
+  <!-- 인터넷 -->
+  <rect class="band" x="20" y="14" width="1110" height="40" rx="8"/>
+  <text class="bt" x="40" y="41">인터넷</text>
+  <path class="a" d="M212 56V136"/>
+  <text class="ld" x="226" y="82">사용자 요청 (Cloudflare → NLB → Envoy)</text>
+
+  <!-- 외부 요청을 받는 곳 -->
+  <rect class="zr" x="20" y="92" width="230" height="180" rx="6"/>
+  <text class="blr" x="36" y="119">외부 요청을 받는 곳</text>
+  <rect class="ind" x="40" y="140" width="190" height="100" rx="10"/>
+  <text class="t" x="135" y="184">core</text>
+  <text class="s" x="135" y="212">API 서버 · Python</text>
+
+  <!-- 외부 요청이 닿지 않는 곳 -->
+  <rect class="box" x="300" y="92" width="570" height="500" rx="6"/>
+  <text class="bl" x="316" y="119">외부 요청이 닿지 않는 곳</text>
+
+  <path class="a" d="M232 190H326"/>
+  <text class="l m mk" x="279" y="176">빌드 요청</text>
+  <text class="ld m mk" x="279" y="216">HMAC 서명</text>
+
+  <rect class="gry" x="330" y="140" width="200" height="100" rx="10"/>
+  <text class="t" x="430" y="184">빌더</text>
+  <text class="s" x="430" y="212">Go</text>
+
+  <path class="a" d="M532 190H636"/>
+  <text class="l m" x="584" y="178">Job 생성</text>
+
+  <rect class="gry" x="640" y="140" width="200" height="100" rx="10"/>
+  <text class="t" x="740" y="184">BuildKit Job</text>
+  <text class="s" x="740" y="212">이미지 빌드</text>
+
+  <!-- 빌더 → 값 커밋 -->
+  <path class="a" d="M500 242V315H911"/>
+  <text class="l" x="516" y="304">이미지 digest 커밋</text>
+
+  <!-- 빌더 → Argo CD -->
+  <path class="ad" d="M430 242V446"/>
+  <text class="ld" x="444" y="382">refresh 요청</text>
+  <text class="ld" x="444" y="406">Synced · Healthy 대기</text>
+
+  <rect class="pur" x="330" y="450" width="510" height="120" rx="10"/>
+  <text class="t" x="585" y="496">Argo CD</text>
+  <text class="s" x="585" y="525">ApplicationSet: apps/* 폴더마다 Application</text>
+  <text class="s" x="585" y="550">server-side apply · prune · selfHeal</text>
+
+  <!-- GitHub -->
+  <rect class="box" x="900" y="92" width="220" height="500" rx="6"/>
+  <text class="bl" x="916" y="119">GitHub</text>
+
+  <rect class="gry" x="915" y="140" width="190" height="100" rx="10"/>
+  <text class="t" x="1010" y="184">GHCR</text>
+  <text class="s" x="1010" y="212">이미지 저장소</text>
+  <path class="a" d="M842 190H911"/>
+  <text class="l m mk" x="876" y="176">push</text>
+
+  <rect class="rep" x="915" y="265" width="190" height="100" rx="10"/>
+  <text class="tk" x="1010" y="302">kodeploy-apps</text>
+  <text class="sk" x="1010" y="328">앱마다의 값</text>
+  <text class="sk" x="1010" y="351">values.yaml</text>
+
+  <rect class="rep" x="915" y="420" width="190" height="100" rx="10"/>
+  <text class="tk" x="1010" y="457">kodeploy-charts</text>
+  <text class="sk" x="1010" y="483">형태 · 플랫폼 정책</text>
+  <text class="sk" x="1010" y="506">templates/ · platform/</text>
+
+  <!-- 값 · 형태 → Argo CD -->
+  <path class="a" d="M913 340H770V446"/>
+  <text class="l" x="784" y="414">값</text>
+  <path class="a" d="M913 485H844"/>
+  <text class="l m mk" x="878" y="473">형태</text>
+
+  <!-- 적용 -->
+  <path class="a" d="M585 572V636"/>
+  <text class="l" x="599" y="612">적용</text>
+
+  <rect class="ind" x="330" y="640" width="510" height="110" rx="10"/>
+  <text class="t" x="585" y="686">테넌트 네임스페이스</text>
+  <text class="s" x="585" y="716">Deployment · Service · HTTPRoute · NetworkPolicy · DB</text>
+
+  <!-- 이미지 pull -->
+  <path class="ad" d="M1107 190H1139V695H844"/>
+  <text class="ld m" x="985" y="685">이미지 pull</text>
+
+  <!-- core가 직접 하는 일 -->
+  <path class="ad" d="M90 242V695H326"/>
+  <text class="ld" x="40" y="728">네임스페이스 · Secret · PVC</text>
+  <text class="ld" x="40" y="753">준비만 (워크로드는 안 씀)</text>
+</svg>
+</body></html>

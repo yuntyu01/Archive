@@ -1,5 +1,5 @@
 ---
-title: "OOMKilled의 진짜 범인 - OS는 반려동물용인데 노드는 가축이었다"
+title: "OOMKilled의 진짜 범인 - control plane Pod 98회 재시작과 dnf-makecache"
 date: "2026-05-14"
 description: "control plane Pod이 13일 동안 98번 재시작됐습니다. dmesg로 범인을 dnf-makecache(2.36GB)로 좁히고 timer를 꺼서 막았습니다."
 tags: ["Kubernetes", "OOMKilled", "Linux"]

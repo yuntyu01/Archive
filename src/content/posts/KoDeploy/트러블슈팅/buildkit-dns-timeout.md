@@ -1,5 +1,5 @@
 ---
-title: "DNS Timeout 범인 찾기 - K8s의 길과 클라우드의 입구 막기"
+title: "DNS Timeout 범인 찾기 - OCI VNIC 검사와 Calico IPIP"
 date: "2026-05-15"
 description: "BuildKit 빌드가 DNS Timeout으로 실패했습니다. 가설 다섯 개를 하나씩 기각한 끝에 범인은 K8s 밖, OCI VNIC의 source/destination 검사였습니다."
 tags: ["Kubernetes", "Calico", "DNS", "OCI"]
@@ -15,7 +15,7 @@ KoDeploy는 K8s 멀티테넌시 한국어 로그 제공 자동 배포 플랫폼�
 
 Core 앱의 `/deploy` 엔드포인트에 GitHub repo 주소와 해당 웹의 포트를 넣으면, worker에서 BuildKit Job이 빌드한 후 Deployment + Service를 생성해 배포하는 로직이다.
 
-(KoDeploy의 자원 구성과 환경은 [이전 글](/posts/oomkilled-real-culprit/)에서 다뤘다.)
+(KoDeploy의 자원 구성과 환경은 [이전 글](/blog/oomkilled-real-culprit/)에서 다뤘다.)
 
 ## 1. 문제
 

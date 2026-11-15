@@ -1,6 +1,6 @@
 ---
 import "../styles/global.css";
-import { SITE } from "../lib/site";
+import { SITE, url } from "../lib/site";
 
 interface Props {
   title?: string;
@@ -11,7 +11,7 @@ const { title, description = SITE.description, wide = false } = Astro.props;
 const pageTitle = title ? `${title} · ${SITE.name}` : `${SITE.name} · ${SITE.role}`;
 const path = Astro.url.pathname;
 const canonical = new URL(path, Astro.site);
-const inPosts = path.startsWith("/posts/");
+const inBlog = path.startsWith(url("/blog/"));
 ---
 
 <!doctype html>
@@ -36,8 +36,9 @@ const inPosts = path.startsWith("/posts/");
     <meta property="og:description" content={description} />
     <meta property="og:type" content={title ? "article" : "website"} />
     <meta property="og:url" content={canonical} />
-    <link rel="alternate" type="application/rss+xml" title={SITE.name} href="/rss.xml" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate" type="application/rss+xml" title={SITE.name} href={url("/rss.xml")} />
+    <link rel="icon" href={url("/favicon.png")} type="image/png" />
+    <link rel="apple-touch-icon" href={url("/apple-touch-icon.png")} />
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css"
@@ -45,10 +46,10 @@ const inPosts = path.startsWith("/posts/");
   </head>
   <body>
     <header class:list={["wrap sitenav", { wide }]}>
-      <a class="brand" href="/">{SITE.name}</a>
+      <a class="brand" href={url("/")}>ARCHIVE</a>
       <nav class="sitelinks" aria-label="사이트">
-        <a href={SITE.portfolio}>Portfolio</a>
-        <a href="/posts/" aria-current={inPosts ? "page" : undefined}>Blog</a>
+        <a href={SITE.portfolio}>PORTFOLIO</a>
+        <a href={url("/blog/")} aria-current={inBlog ? "page" : undefined}>BLOG</a>
         <button class="theme-btn" id="themeBtn" type="button" aria-label="다크 모드로 전환" title="다크 모드로 전환">
           <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7z"></path></svg>
           <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"></circle><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"></path></svg>
@@ -62,7 +63,7 @@ const inPosts = path.startsWith("/posts/");
       <div class:list={["wrap footer-row", { wide }]}>
         <span>© {new Date().getFullYear()} {SITE.name}</span>
         <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
-        <a href="/rss.xml">RSS</a>
+        <a href={url("/rss.xml")}>RSS</a>
       </div>
     </footer>
     <script is:inline>

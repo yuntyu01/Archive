@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<title>Argo CD 이전 구조</title>
+<!-- 렌더: 1000x810, deviceScaleFactor 2 → public/images/posts/argocd-declarative-deploy/01.png -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<style>
+  html,body{margin:0;padding:0;background:#f6f6f6}
+  svg{display:block}
+  text{font-family:Pretendard,"Noto Sans CJK KR",sans-serif}
+  .ind{fill:#6d73ce}
+  .gry{fill:#666666}
+  .rep{fill:#ffffff;stroke:#666666;stroke-width:2}
+  .t{font-size:28px;font-weight:600;fill:#fff;text-anchor:middle}
+  .s{font-size:19px;font-weight:500;fill:rgba(255,255,255,.88);text-anchor:middle}
+  .tk{font-size:25px;font-weight:600;fill:#000;text-anchor:middle}
+  .sk{font-size:18px;font-weight:500;fill:#666;text-anchor:middle}
+  .tr{font-size:18px;font-weight:600;fill:#fff;text-anchor:middle}
+  .band{fill:#e4e4e4}
+  .bt{font-size:20px;font-weight:700;fill:#333}
+  .box{fill:none;stroke:#666;stroke-width:1.6;stroke-dasharray:3 4}
+  .zr{fill:none;stroke:#e54e4f;stroke-width:1.8;stroke-dasharray:6 5}
+  .bl{font-size:20px;font-weight:700;fill:#000}
+  .blr{font-size:20px;font-weight:700;fill:#e54e4f}
+  .a{fill:none;stroke:#000;stroke-width:2.4;marker-end:url(#ah)}
+  .ad{fill:none;stroke:#777;stroke-width:2;stroke-dasharray:7 6;marker-end:url(#ahd)}
+  .l{font-size:19px;font-weight:600;fill:#000}
+  .lr{font-size:19px;font-weight:700;fill:#e54e4f}
+  .ld{font-size:18px;font-weight:500;fill:#555}
+  .mk{paint-order:stroke;stroke:#f6f6f6;stroke-width:8px;stroke-linejoin:round}
+  .m{text-anchor:middle}
+  .e{text-anchor:end}
+  .panel{fill:#fff;stroke:#d4d4d4;stroke-width:1.5}
+  .sep{stroke:#e6e6e6;stroke-width:1.5}
+  .chip{font-size:18px;font-weight:700;fill:#fff;text-anchor:middle}
+  .pd{font-size:17px;font-weight:500;fill:#222}
+  .pdr{font-size:17px;font-weight:600;fill:#e54e4f}
+</style>
+</head><body>
+<svg id="fig" width="1000" height="810" viewBox="0 0 1000 810" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="ah" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M1 1L10.5 6L1 11" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="ahd" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M1 1L10.5 6L1 11" fill="none" stroke="#777" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="810" fill="#f6f6f6"/>
+
+  <!-- 인터넷 -->
+  <rect class="band" x="20" y="14" width="960" height="40" rx="8"/>
+  <text class="bt" x="40" y="41">인터넷</text>
+  <path class="a" d="M235 56V136"/>
+  <text class="ld" x="249" y="82">사용자 요청 (Cloudflare → NLB → Envoy)</text>
+
+  <!-- 외부 요청을 받는 곳 -->
+  <rect class="zr" x="20" y="92" width="270" height="276" rx="6"/>
+  <text class="blr" x="36" y="119">외부 요청을 받는 곳</text>
+  <rect class="ind" x="40" y="140" width="230" height="200" rx="10"/>
+  <text class="t" x="155" y="222">core</text>
+  <text class="s" x="155" y="252">API 서버 · Python</text>
+  <text class="s" x="155" y="278">클러스터 전역 권한 35개</text>
+
+  <!-- 외부 요청이 닿지 않는 곳 -->
+  <rect class="box" x="330" y="92" width="310" height="276" rx="6"/>
+  <text class="bl" x="346" y="119">외부 요청이 닿지 않는 곳</text>
+  <rect class="gry" x="355" y="140" width="260" height="90" rx="10"/>
+  <text class="t" x="485" y="180">BuildKit Job</text>
+  <text class="s" x="485" y="208">이미지 빌드</text>
+  <rect class="rep" x="355" y="250" width="260" height="90" rx="10"/>
+  <text class="tk" x="485" y="288">DB</text>
+  <text class="sk" x="485" y="316">원하는 상태 (앱 설정)</text>
+
+  <path class="a" d="M272 185H351"/>
+  <text class="l m mk" x="311" y="173">Job 생성</text>
+  <path class="a" d="M353 295H274"/>
+  <text class="ld m mk" x="311" y="283">읽기</text>
+
+  <!-- GitHub -->
+  <rect class="box" x="680" y="92" width="300" height="160" rx="6"/>
+  <text class="bl" x="696" y="119">GitHub</text>
+  <rect class="gry" x="705" y="140" width="250" height="90" rx="10"/>
+  <text class="t" x="830" y="180">GHCR</text>
+  <text class="s" x="830" y="208">이미지 저장소</text>
+  <path class="a" d="M617 185H701"/>
+  <text class="l m mk" x="659" y="173">push</text>
+
+  <!-- 적용 -->
+  <path class="a" d="M155 342V446"/>
+  <text class="l" x="170" y="401">Jinja 템플릿 렌더 → K8s API 직접 호출</text>
+  <text class="lr" x="170" y="428">없으면 create, 있으면 patch · replace</text>
+
+  <path class="ad" d="M830 232V520H644"/>
+  <text class="ld" x="844" y="384">이미지 pull</text>
+
+  <rect class="box" x="20" y="450" width="620" height="140" rx="6"/>
+  <text class="bl e" x="624" y="480">테넌트 네임스페이스</text>
+  <rect class="gry" x="40" y="500" width="133" height="70" rx="10"/>
+  <text class="tr" x="106.5" y="541">Deployment</text>
+  <rect class="gry" x="189" y="500" width="133" height="70" rx="10"/>
+  <text class="tr" x="255.5" y="541">Service</text>
+  <rect class="gry" x="338" y="500" width="133" height="70" rx="10"/>
+  <text class="tr" x="404.5" y="541">HTTPRoute</text>
+  <rect class="gry" x="487" y="500" width="133" height="70" rx="10"/>
+  <text class="tr" x="553.5" y="541">NetworkPolicy</text>
+
+  <!-- create · patch · replace -->
+  <rect class="panel" x="20" y="620" width="960" height="168" rx="10"/>
+  <line class="sep" x1="20" y1="676" x2="980" y2="676"/>
+  <line class="sep" x1="20" y1="732" x2="980" y2="732"/>
+
+  <rect class="gry" x="40" y="632" width="110" height="32" rx="7"/>
+  <text class="chip" x="95" y="654">create</text>
+  <text class="pd" x="170" y="654">리소스가 없을 때 새로 만든다</text>
+
+  <rect class="red" x="40" y="688" width="110" height="32" rx="7" fill="#e54e4f"/>
+  <text class="chip" x="95" y="710">patch</text>
+  <text class="pd" x="170" y="710">보낸 값만 기존 객체에 병합한다 - 안 보낸 값은 남는다 <tspan class="pdr">(8080에 3000을 보내면 둘 다 남음)</tspan></text>
+
+  <rect class="gry" x="40" y="744" width="110" height="32" rx="7"/>
+  <text class="chip" x="95" y="766">replace</text>
+  <text class="pd" x="170" y="766">객체 전체를 덮어쓴다 - clusterIP 같은 값은 읽어서 다시 채우고, 다른 컨트롤러가 쓴 값도 지운다</text>
+</svg>
+</body></html>

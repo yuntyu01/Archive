@@ -1,9 +1,10 @@
 ---
-title: "[2편] 내 PaaS에 내 앱 올리기 - 트래픽편"
+title: "[2편] 내 PaaS에 내 앱 전환하기 - 트래픽편"
 date: "2026-06-05"
 description: "Dailo 이전 2편. 커스텀 도메인을 Cloudflare for SaaS로 붙이고, origin mTLS와 부딪힌 원인을 계층별로 좁혀 풀었습니다."
 tags: ["Cloudflare", "커스텀 도메인", "TLS"]
 series: "KoDeploy"
+also: ["Dailo/앱 이전"]
 velog: "https://velog.io/@yun60/2편-내-PaaS에-내-앱-올리기-트래픽편"
 thumbnail: "/images/thumbs/my-paas-my-app-traffic.webp"
 ---
@@ -12,7 +13,7 @@ thumbnail: "/images/thumbs/my-paas-my-app-traffic.webp"
 
 ---
 
-[**[1편] 내 PaaS에 내 앱 올리기 - 데이터 편**](/posts/my-paas-my-app-data/)
+[[1편] 내 PaaS에 내 앱 전환하기 - 데이터 편](/blog/my-paas-my-app-data/)
 
 ## 0. 현재 상태
 
@@ -206,7 +207,7 @@ SNI가 커스텀 도메인을 사용하려면 유저가 늘 때마다 갈래 목
 
 사실 AWS 때 Dailo는 CloudFront → ALB 사이를 **`X-Origin-Verify` 비밀 헤더**로 잠갔었다. CloudFront가 헤더를 붙이고 ALB가 검증하는 방식으로 mTLS와 목적이 같고, 헤더는 **L7(HTTP)**이라 위에서 본 SNI/listener 문제를 통째로 우회한다 (보안성은 mTLS가 좀 더 우위겠지만)
 
-> **HTTPS가 항상 정답은 아니었다 - CloudFront 502 장애 분석**
+> [HTTPS가 항상 정답은 아니었다 - CloudFront 502 장애 분석](/blog/cloudfront-502-ssl-offloading/)
 > 
 
 mTLS에서 얻은 교훈이 있다 "zone 설정이 SaaS를 덮느냐"는 기능마다 다르다는 것. AOP(TLS)는 안 덮었다. mTLS에 대한 PTSD가 와서 Cloudflare Transform Rules(헤더 추가, HTTP)도 SaaS에 적용되는지 검증해봤다

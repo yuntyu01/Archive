@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<title>core 권한이 닿는 범위</title>
+<!-- 렌더: 1120x920, deviceScaleFactor 2 → public/images/posts/rbac-rolebinding-vap/01.png -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<style>
+  html,body{margin:0;padding:0;background:#f6f6f6}
+  svg{display:block}
+  text{font-family:Pretendard,"Noto Sans CJK KR",sans-serif}
+  .ind{fill:#6d73ce}
+  .gry{fill:#666666}
+  .pur{fill:#c075e7}
+  .red{fill:#e54e4f}
+  .rep{fill:#ffffff;stroke:#666666;stroke-width:2}
+  .t{font-size:27px;font-weight:600;fill:#fff;text-anchor:middle}
+  .s{font-size:18px;font-weight:500;fill:rgba(255,255,255,.88);text-anchor:middle}
+  .tk{font-size:24px;font-weight:600;fill:#000;text-anchor:middle}
+  .sk{font-size:17px;font-weight:500;fill:#666;text-anchor:middle}
+  .tag{font-size:16px;font-weight:600;fill:rgba(255,255,255,.8);text-anchor:end}
+  .box{fill:none;stroke:#666;stroke-width:1.6;stroke-dasharray:3 4}
+  .band{fill:#e4e4e4}
+  .bt{font-size:20px;font-weight:700;fill:#333}
+  .zr{fill:none;stroke:#e54e4f;stroke-width:1.8;stroke-dasharray:6 5}
+  .blr{font-size:20px;font-weight:700;fill:#e54e4f}
+  .bl{font-size:22px;font-weight:700;fill:#000}
+  .a{fill:none;stroke:#000;stroke-width:2.4;marker-end:url(#ah)}
+  .ar{fill:none;stroke:#e54e4f;stroke-width:2.2;stroke-dasharray:7 6}
+  .l{font-size:19px;font-weight:600;fill:#000}
+  .ld{font-size:18px;font-weight:500;fill:#555}
+  .lr{font-size:19px;font-weight:700;fill:#e54e4f}
+  .n{font-size:18px;font-weight:500;fill:#333}
+  .nb{font-size:20px;font-weight:700;fill:#000}
+  .m{text-anchor:middle}
+  .e{text-anchor:end}
+</style>
+</head><body>
+<svg id="fig" width="1120" height="920" viewBox="0 0 1120 920" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="ah" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M1 1L10.5 6L1 11" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <rect width="1120" height="920" fill="#f6f6f6"/>
+
+  <!-- 인터넷 -->
+  <rect class="band" x="20" y="14" width="1080" height="40" rx="8"/>
+  <text class="bt" x="40" y="41">인터넷</text>
+  <path class="a" d="M250 56V136"/>
+  <text class="ld" x="264" y="82">사용자 요청 (Cloudflare → NLB → Envoy)</text>
+
+  <!-- 외부 요청을 받는 곳 -->
+  <rect class="zr" x="20" y="92" width="290" height="170" rx="6"/>
+  <text class="blr" x="36" y="119">외부 요청을 받는 곳</text>
+
+  <g transform="translate(0,110)">
+  <!-- core -->
+  <rect class="ind" x="40" y="30" width="240" height="100" rx="10"/>
+  <text class="t" x="160" y="88">core</text>
+  <text class="s" x="160" y="114">API 서버의 ServiceAccount</text>
+
+  <!-- core → exec 게이트웨이 (K8s API를 거치지 않음) -->
+  <path class="a" d="M282 80H1100V710H1049"/>
+  <text class="l m" x="690" y="66">서명 요청 - 터미널 · SQL · 덤프 · 복원 (K8s API를 거치지 않음)</text>
+
+  <!-- core → API 서버 -->
+  <path class="a" d="M160 132V216"/>
+
+  <!-- K8s API 서버 -->
+  <rect class="box" x="20" y="170" width="1060" height="190" rx="6"/>
+  <text class="bl e" x="1062" y="202">K8s API 서버</text>
+
+  <rect class="gry" x="40" y="220" width="780" height="110" rx="10"/>
+  <text class="t" x="430" y="266">RBAC</text>
+  <text class="s" x="430" y="296">전역 ClusterRole 6개 + 네임스페이스마다 RoleBinding · Role</text>
+
+  <path class="a" d="M822 275H886"/>
+  <text class="l m" x="854" y="263">쓰기</text>
+
+  <rect class="pur" x="890" y="220" width="170" height="110" rx="10"/>
+  <text class="t" x="975" y="262">VAP</text>
+  <text class="s" x="975" y="290">ns · RoleBinding</text>
+  <text class="s" x="975" y="313">이름 · 형태 검사</text>
+
+  <!-- RBAC → 네임스페이스 -->
+  <path class="ar" d="M140 332V452"/>
+  <path d="M130 444L150 464M150 444L130 464" stroke="#e54e4f" stroke-width="3" stroke-linecap="round"/>
+  <text class="lr" x="156" y="400">RoleBinding 없음 · 403</text>
+
+  <path class="a" d="M380 332V456"/>
+  <text class="l" x="394" y="400">Role</text>
+
+  <path class="a" d="M790 332V496"/>
+
+  <!-- VAP → 테넌트 ns 생성 -->
+  <path class="a" d="M975 332V426"/>
+  <text class="ld e" x="962" y="400">통과한 것만 생성</text>
+
+  <!-- 그 밖의 네임스페이스 -->
+  <rect class="red" x="40" y="470" width="200" height="110" rx="10"/>
+  <text class="t" x="140" y="509">다른 ns</text>
+  <text class="s" x="140" y="537">kube-system · argocd</text>
+  <text class="s" x="140" y="561">default · monitoring</text>
+
+  <!-- 빌드 네임스페이스 -->
+  <rect class="rep" x="280" y="460" width="200" height="120" rx="10"/>
+  <text class="tk" x="380" y="503">kodeploy-build</text>
+  <text class="sk" x="380" y="531">빌드 네임스페이스</text>
+  <text class="sk" x="380" y="556">Secret은 pull 인증만</text>
+
+  <!-- 전역 권한 메모 -->
+  <text class="nb" x="40" y="652">전역 권한 6개</text>
+  <text class="n" x="40" y="686">쓰기 3 - ns 생성 · RoleBinding 생성 · bind (VAP로 제한)</text>
+  <text class="n" x="40" y="716">읽기 3 - Pod 목록 · 노드 목록 · nodes/stats</text>
+
+  <!-- 테넌트 네임스페이스 -->
+  <rect class="box" x="510" y="430" width="560" height="360" rx="6"/>
+  <text class="bl" x="528" y="463">테넌트 네임스페이스</text>
+
+  <rect class="rep" x="535" y="500" width="510" height="110" rx="10"/>
+  <text class="tk" x="790" y="540">RoleBinding → kodeploy-core-tenant</text>
+  <text class="sk" x="790" y="570">이 ns 안에서만: Secret · PVC · Pod 목록 · 로그 · ns 삭제</text>
+  <text class="sk" x="790" y="594">core가 ns를 만들 때 자기에게 건다</text>
+
+  <rect class="ind" x="535" y="660" width="210" height="100" rx="10"/>
+  <text class="t" x="640" y="702">앱 · DB · Redis</text>
+  <text class="s" x="640" y="730">Pod</text>
+
+  <path class="a" d="M843 710H749"/>
+  <text class="l m" x="796" y="698">exec</text>
+
+  <rect class="gry" x="845" y="660" width="200" height="100" rx="10"/>
+  <text class="t" x="945" y="702">kodeploy-exec</text>
+  <text class="s" x="945" y="730">exec만 · Secret 없음</text>
+  </g>
+</svg>
+</body></html>

@@ -63,6 +63,8 @@ body {
 main { flex: 1; }
 a { color: var(--ink); text-decoration: none; font-weight: 600; }
 :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+/* 드래그 선택 - 브라우저 기본 파란색 대신 사이트 색 (다크에서는 자동으로 반대) */
+::selection { background: var(--ink); color: var(--bg); }
 img { max-width: 100%; }
 b, strong { font-weight: 700; color: var(--ink); }
 .muted { color: var(--faint); }
@@ -90,8 +92,8 @@ b, strong { font-weight: 700; color: var(--ink); }
 .cover h1 { font-size: clamp(40px, 9vw, 56px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; color: var(--ink); }
 .cover .who { margin-top: 14px; font-size: 15px; color: var(--body); }
 .cover-rule { border: 0; border-top: 1px solid var(--line); margin: 34px 0 26px; }
-/* 칸 너비는 글자 길이대로, 첫 칸은 왼쪽 끝·마지막 칸은 오른쪽 끝에 (아래 버튼·박스와 열을 맞춘다). 좁으면 한 줄에 하나 */
-.contacts { display: grid; grid-template-columns: repeat(3, auto); justify-content: space-between; gap: 18px 24px; }
+/* 세 칸을 같은 폭으로 나눠 시작점 간격을 맞춘다 (글자 길이가 달라도 칸 위치는 그대로). 좁으면 두 칸 */
+.contacts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px 24px; }
 @media (max-width: 600px) { .contacts { grid-template-columns: 1fr 1fr; gap: 14px 16px; justify-content: stretch; } .contacts .vl { font-size: 14.5px; overflow-wrap: anywhere; } }
 .contacts .clb { font-size: 12.5px; color: var(--faint); font-weight: 600; }
 .contacts .vl { display: block; margin-top: 3px; font-size: 15.5px; font-weight: 700; color: var(--ink); }
@@ -158,6 +160,10 @@ a.item:hover .item-title { text-decoration: underline; text-decoration-color: va
   .tree-head.lead::after { left: -25.5px; width: 11px; height: 11px; }
 }
 @media (max-width: 600px) { .tree { padding-top: 40px; margin-top: 40px; } .tree::before { top: 62px; } }
+/* 블로그 글 목록: 첫 연도는 제목 바로 아래 - 위 선 없이. 세로선은 연도 노드 아래에서 시작 (위 .tree::before의 52+26, 40+22와 같은 자리) */
+.years > .tree:first-child { border-top: 0; padding-top: 0; margin-top: 44px; }
+.years > .tree:first-child::before { top: 26px; }
+@media (max-width: 600px) { .years > .tree:first-child { margin-top: 32px; } .years > .tree:first-child::before { top: 22px; } }
 
 .item-meta { font-size: 13px; color: var(--faint); }
 .item-meta .series { color: var(--body); font-weight: 700; }
@@ -203,6 +209,11 @@ a.item:hover .item-title { text-decoration: underline; text-decoration-color: va
 .post-link::before { content: "→"; display: inline-block; margin-right: 7px; color: var(--faint); }
 .post-link:hover { text-decoration-color: var(--ink); }
 
+/* 프로젝트 카드 제목 줄 - 포폴 .titlerow · .pj-logo와 같은 모양 */
+.ptitle { display: flex; align-items: center; gap: 10px; }
+.ptitle .item-title { margin-top: 0; }
+.plogo { width: 30px; height: 30px; flex: 0 0 30px; border-radius: 8px; border: 1px solid var(--line); object-fit: cover; }
+.ptitle + .item-meta { margin-top: 10px; }
 .pitch { margin-top: 10px; font-size: 15.5px; font-weight: 600; color: var(--ink); }
 
 /* ── 상단 메뉴 (포트폴리오와 같은 모양): 이름 · Portfolio · Blog · 라이트/다크 ── */

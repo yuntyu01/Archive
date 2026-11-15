@@ -1,13 +1,17 @@
 import { getCollection, type CollectionEntry } from "astro:content";
 
+// 사이트 안 주소 = base(/Archive) + 경로. 코드에서 "/blog/"처럼 바로 쓰지 말고 url("/blog/")로
+export const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
+export const url = (p: string) => (p.startsWith("/") && !p.startsWith("//") ? BASE + p : p);
+
 export const SITE = {
   name: "윤정환",
   role: "Infrastructure Engineer",
   description: "Kubernetes 위에 직접 만든 배포 플랫폼 KoDeploy를 운영하며 겪은 일을 기록합니다.",
   github: "https://github.com/yuntyu01",
   email: "yuntyu01@gmail.com",
-  portfolio: "/PORTFOLIO/", // 포트폴리오 한 장 = public/PORTFOLIO/index.html (예전 PORTFOLIO 저장소에서 옮겨 옴)
-  kodeploy: "https://kodeploy.com/",
+  portfolio: url("/PORTFOLIO/"), // 포트폴리오 한 장 = public/PORTFOLIO/index.html (예전 PORTFOLIO 저장소에서 옮겨 옴)
+  linkedin: "https://www.linkedin.com/in/%EC%A0%95%ED%99%98-%EC%9C%A4-399058352/",
 };
 
 export type Post = CollectionEntry<"posts">;
@@ -51,6 +55,17 @@ export function categoryOf(post: Post): { cat: string; sub: string } {
   const dirs = rel.split("/").slice(0, -1);
   return { cat: dirs[0] ?? "", sub: dirs[1] ?? "" };
 }
+// 폴더 카테고리 + 머리말 also로 더 건 카테고리. 첫 번째가 글의 집(폴더)
+export function categoriesOf(post: Post): { cat: string; sub: string }[] {
+  const extra = post.data.also.map((s) => {
+    const [cat = "", sub = ""] = nfc(s).split("/");
+    return { cat, sub };
+  });
+  return [categoryOf(post), ...extra].filter((c) => c.cat);
+}
+// 카테고리 줄로 거를 때 맞춰 보는 값: "큰"과 "큰/세부"
+export const categoryKeys = (post: Post) =>
+  categoriesOf(post).flatMap(({ cat, sub }) => (sub ? [cat, `${cat}/${sub}`] : [cat]));
 // "KoDeploy › 트러블슈팅"
 export const categoryPath = (post: Post) => {
   const { cat, sub } = categoryOf(post);
@@ -61,12 +76,13 @@ export type Category = { name: string; label: string; count: number; subs: { nam
 export function categories(posts: Post[]): Category[] {
   const cats = new Map<string, { count: number; subs: Map<string, number> }>();
   for (const p of posts) {
-    const { cat, sub } = categoryOf(p);
-    if (!cat) continue; // 카테고리 폴더 밖(blog 맨 위)에 둔 글은 '전체'에만
-    const c = cats.get(cat) ?? { count: 0, subs: new Map<string, number>() };
-    c.count++;
-    if (sub) c.subs.set(sub, (c.subs.get(sub) ?? 0) + 1);
-    cats.set(cat, c);
+    // 카테고리 폴더 밖(blog 맨 위)에 둔 글은 '전체'에만. also로 건 카테고리에서도 센다
+    for (const { cat, sub } of categoriesOf(p)) {
+      const c = cats.get(cat) ?? { count: 0, subs: new Map<string, number>() };
+      c.count++;
+      if (sub) c.subs.set(sub, (c.subs.get(sub) ?? 0) + 1);
+      cats.set(cat, c);
+    }
   }
   return [...cats.keys()].sort(byOrder).map((name) => {
     const c = cats.get(name)!;

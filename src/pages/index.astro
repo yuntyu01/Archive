@@ -2,7 +2,7 @@
 import Base from "../layouts/Base.astro";
 import PostItem from "../components/PostItem.astro";
 import BlogCats from "../components/BlogCats.astro";
-import { SITE, allPosts, categories } from "../lib/site";
+import { SITE, allPosts, categories, url } from "../lib/site";
 
 const posts = await allPosts();
 const HOME_POSTS = 6; // 한 번에 보여 줄 글 수 (카테고리를 골라도 같다)
@@ -13,6 +13,7 @@ const slug = (name: string) => "project-" + name.toLowerCase().replace(/[^a-z0-9
 const projects = [
   {
     name: "KoDeploy",
+    logo: url("/images/logos/kodeploy.png"), // kodeploy.com 파비콘 (kodeploy 저장소 web/public/favicon.svg)
     meta: "Solo · 기획/인프라/백엔드 100% · 2026.04 ~ 운영 중",
     pitch: "GitHub 링크만 입력하면 빌드부터 배포까지 자동화하는 K8s 기반 멀티테넌트 PaaS",
     stack: ["Kubernetes (kubeadm)", "Argo CD", "Helm", "BuildKit", "Go", "Python", "Terraform", "Ansible"],
@@ -23,7 +24,8 @@ const projects = [
   },
   {
     name: "Dailo",
-    meta: "Leader · 팀장/Infra 100% · 6인 팀 · 2026.01 ~ 운영 중",
+    logo: url("/images/logos/dailo.png"), // 앱 아이콘 (Dailo 저장소 AppIcon 1024)
+    meta: "Leader · 팀장/Infra 100% · 6인 팀 · 2026.01 ~ 2026.12",
     pitch: "지역·대학 행사 정보를 모아 제공하는 서비스 - 대학 축제와 연계해 운영",
     stack: ["AWS", "Terraform", "GitHub Actions", "Grafana"],
     links: [
@@ -45,7 +47,7 @@ const projects = [
     <hr class="cover-rule" />
     <div class="contacts">
       <div><span class="clb">GitHub</span><a class="vl" href={SITE.github}>github.com/yuntyu01</a></div>
-      <div><span class="clb">KoDeploy</span><a class="vl" href={SITE.kodeploy}>kodeploy.com</a></div>
+      <div><span class="clb">LinkedIn</span><a class="vl" href={SITE.linkedin}>linkedin.com</a></div>
       <div><span class="clb">Email</span><a class="vl" href={`mailto:${SITE.email}`}>{SITE.email}</a></div>
     </div>
   </section>
@@ -59,7 +61,10 @@ const projects = [
       {
         projects.map((p) => (
           <article class="item" id={slug(p.name)}>
-            <h3 class="item-title">{p.name}</h3>
+            <div class="ptitle">
+              <img class="plogo" src={p.logo} alt="" width="30" height="30" />
+              <h3 class="item-title">{p.name}</h3>
+            </div>
             <p class="item-meta">{p.meta}</p>
             <p class="pitch">{p.pitch}</p>
             <div class="plinks">
@@ -96,7 +101,7 @@ const projects = [
     <div class="tree-body" id="blog-list">
       {posts.map((p, i) => <PostItem post={p} hidden={i >= HOME_POSTS} />)}
     </div>
-    <a class="post-link" id="blog-more" href="/posts/" hidden={posts.length <= HOME_POSTS}>전체 글 보기</a>
+    <a class="post-link" id="blog-more" href={url("/blog/")} hidden={posts.length <= HOME_POSTS}>전체 글 보기</a>
   </section>
 
   <!-- 오른쪽 목차 - 화면을 따라 내려오고, 지금 보고 있는 곳을 진하게. Blog 아래 카테고리를 누르면 그 카테고리로 걸러 준다 -->

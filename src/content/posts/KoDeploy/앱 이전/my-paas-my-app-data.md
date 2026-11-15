@@ -1,9 +1,10 @@
 ---
-title: "[1편] 내 PaaS에 내 앱 올리기 - 데이터 편"
+title: "[1편] 내 PaaS에 내 앱 전환하기 - 데이터 편"
 date: "2026-06-03"
 description: "Dailo 이전 1편. 프라이빗 RDS를 SSM 터널로 덤프해 옮기고, 적재 중 만난 MySQL OOM을 performance_schema를 꺼서 해결했습니다."
 tags: ["MySQL", "데이터 이전", "OOM"]
 series: "KoDeploy"
+also: ["Dailo/앱 이전"]
 velog: "https://velog.io/@yun60/1편-내-PaaS에-내-앱-올리기-데이터-편"
 thumbnail: "/images/thumbs/my-paas-my-app-data.webp"
 ---

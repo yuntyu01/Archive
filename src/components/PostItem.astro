@@ -1,7 +1,7 @@
 ---
 // 글 한 편 = 박스 하나 (박스 전체가 링크). 맨 위 날짜·카테고리 줄 → 그 아래 왼쪽 썸네일 · 오른쪽 제목이 같은 줄에서 시작
-// data-cat / data-sub = 카테고리 줄(BlogCats)로 걸러 볼 때 쓰는 폴더 이름
-import { fmtDate, categoryOf, catLabel, type Post } from "../lib/site";
+// data-cat / data-sub = 글이 놓인 폴더 이름, data-keys = 카테고리 줄(BlogCats)로 걸러 볼 때 맞춰 보는 값(also 포함, | 구분)
+import { fmtDate, categoryOf, categoryKeys, catLabel, url, type Post } from "../lib/site";
 
 interface Props {
   post: Post;
@@ -14,9 +14,10 @@ const { cat, sub } = categoryOf(post);
 
 <a
   class:list={["item", "post-item", { "has-thumb": d.thumbnail }]}
-  href={`/posts/${post.id}/`}
+  href={url(`/blog/${post.id}/`)}
   data-cat={cat}
   data-sub={sub}
+  data-keys={categoryKeys(post).join("|")}
   hidden={hidden}
 >
   <p class="item-meta">
@@ -31,7 +32,7 @@ const { cat, sub } = categoryOf(post);
       )
     }
   </p>
-  {d.thumbnail && <img class="thumb" src={d.thumbnail} alt="" loading="lazy" decoding="async" />}
+  {d.thumbnail && <img class="thumb" src={url(d.thumbnail)} alt="" loading="lazy" decoding="async" />}
   <div class="post-body">
     <h3 class="item-title">{d.title}</h3>
     {d.description && <p class="item-desc">{d.description}</p>}

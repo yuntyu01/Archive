@@ -8,7 +8,7 @@
 //   count   글 수를 적어 둔 요소 - 고른 카테고리의 글 수로 바꿔 쓴다
 //   syncUrl 고른 카테고리를 주소의 ?c= 에 남긴다 (글 목록 페이지 - 공유·뒤로 가기용)
 // 같은 페이지의 다른 곳(홈 목차)은 'bcats:set' 이벤트로 카테고리를 바꾸고, 'bcats:change'로 알림을 받는다.
-import type { Category } from "../lib/site";
+import { BASE, type Category } from "../lib/site";
 
 interface Props {
   id?: string;
@@ -31,6 +31,7 @@ const { id, cats, target, limit = 0, more, count, syncUrl = false } = Astro.prop
   data-more={more}
   data-count={count}
   data-url={syncUrl ? "1" : undefined}
+  data-base={BASE}
 >
   <div class="bcats-main" role="group" aria-label="카테고리">
     <button type="button" class="bcat on" data-cat="" aria-pressed="true">전체</button>
@@ -69,7 +70,8 @@ const { id, cats, target, limit = 0, more, count, syncUrl = false } = Astro.prop
   document.querySelectorAll<HTMLElement>("[data-bcats]").forEach((root) => {
     const list = document.querySelector<HTMLElement>(root.dataset.target || "");
     if (!list) return;
-    const items = [...list.querySelectorAll<HTMLElement>("[data-cat]")];
+    // 글 = data-keys가 있는 것 (카테고리 줄이 목록 안에 들어가도 버튼의 data-cat과 섞이지 않게)
+    const items = [...list.querySelectorAll<HTMLElement>("[data-keys]")];
     const groups = [...list.querySelectorAll<HTMLElement>("[data-group]")];
     const limit = Number(root.dataset.limit || 0);
     const more = root.dataset.more ? document.querySelector<HTMLAnchorElement>(root.dataset.more) : null;
@@ -96,7 +98,9 @@ const { id, cats, target, limit = 0, more, count, syncUrl = false } = Astro.prop
       });
       let matched = 0, shown = 0;
       for (const it of items) {
-        const ok = (!cat || it.dataset.cat === cat) && (!sub || it.dataset.sub === sub);
+        // 글은 폴더 카테고리 말고도 also로 다른 카테고리에 걸릴 수 있다 (data-keys = "큰|큰/세부|...")
+        const key = cat ? (sub ? cat + "/" + sub : cat) : "";
+        const ok = !key || nfc(it.dataset.keys || "").split("|").includes(key);
         if (ok) matched++;
         const show = ok && (!limit || shown < limit);
         if (show) shown++;
@@ -104,15 +108,15 @@ const { id, cats, target, limit = 0, more, count, syncUrl = false } = Astro.prop
       }
       // 연도 묶음 등: 남은 글이 없으면 묶음째 숨기고, 묶음의 글 수도 고쳐 쓴다
       for (const g of groups) {
-        const n = g.querySelectorAll("[data-cat]:not([hidden])").length;
-        g.hidden = n === 0;
+        const n = g.querySelectorAll("[data-keys]:not([hidden])").length;
+        g.hidden = n === 0 && !g.contains(root); // 카테고리 줄이 든 묶음은 글이 없어도 남긴다
         const c = g.querySelector<HTMLElement>("[data-group-count]");
         if (c) c.textContent = n + "편";
       }
       if (countEl) countEl.textContent = matched + "편";
       if (more) {
         more.hidden = !(limit && matched > limit);
-        more.href = "/posts/" + (cat ? "?c=" + encodeURIComponent(cat + (sub ? "/" + sub : "")) : "");
+        more.href = (root.dataset.base || "") + "/blog/" + (cat ? "?c=" + encodeURIComponent(cat + (sub ? "/" + sub : "")) : "");
       }
       if (syncUrl) {
         const u = new URL(location.href);
