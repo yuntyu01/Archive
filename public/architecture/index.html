@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../favicon.png" type="image/png">
+<title>KoDeploy 아키텍처</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<style>
+:root{
+  --bg:#ffffff; --bg2:#f4f5f7;
+  --ink:#1f2328; --body:#3f4650; --faint:#828d9a;
+  --line:#e4e7eb;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Consolas,"Liberation Mono",monospace;
+  --sans:Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--body);line-height:1.75;font-size:15px;
+  font-weight:500;font-feature-settings:"tnum";-webkit-font-smoothing:antialiased}
+a{color:var(--ink);text-decoration:none;font-weight:600}
+b,strong{font-weight:700;color:var(--ink)}
+.wrap{max-width:1120px;margin:0 auto;padding:56px 24px 72px}
+@media(max-width:600px){.wrap{padding:36px 16px 56px}}
+.crumb{font-size:13px;color:var(--faint);font-weight:600}
+.crumb a{color:var(--faint)}
+.crumb a:hover{color:var(--ink)}
+h1{margin-top:10px;font-size:clamp(28px,6vw,36px);font-weight:800;letter-spacing:-.02em;line-height:1.25;color:var(--ink)}
+.pitch{margin-top:12px;font-size:15.5px;font-weight:600;color:var(--ink)}
+.arch{margin-top:28px;border:1px solid var(--line);border-radius:10px;background:#fff;padding:20px;overflow-x:auto}
+.arch svg{display:block;width:100%;min-width:820px;height:auto}
+.row{margin-top:36px}
+.row-title{font-size:15.5px;font-weight:800;margin-bottom:12px;color:var(--ink);letter-spacing:-.01em}
+.ov{list-style:disc;padding-left:22px}
+.ov li{font-size:14.5px;margin-bottom:7px}
+.ov li::marker{color:var(--faint)}
+.code{font-family:var(--mono);font-size:.86em;background:var(--bg2);border-radius:4px;padding:1.5px 6px;color:var(--ink)}
+.tblwrap{overflow-x:auto;margin:4px 0 12px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}
+th{background:var(--bg2);font-weight:700;font-size:12.5px;white-space:nowrap;color:var(--ink)}
+.bignums{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:20px;margin-top:26px}
+.bn .v{font-size:clamp(23px,5vw,28px);font-weight:800;letter-spacing:-.02em;color:var(--ink);line-height:1.2}
+.bn .k{font-size:13px;color:var(--faint);margin-top:4px}
+.pager{display:flex;justify-content:space-between;gap:16px;margin-top:52px;padding-top:22px;border-top:1px solid var(--line);font-size:14px}
+.pager a{text-decoration:underline;text-decoration-color:#ccd1d8;text-decoration-thickness:1px;text-underline-offset:4px}
+.pager a:hover{text-decoration-color:var(--ink)}
+@page{size:A4 landscape;margin:12mm}
+@media print{
+  html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .wrap{max-width:none;padding:0}
+  .pager,.crumb{display:none}
+  .arch{break-inside:avoid;overflow:visible}
+  .arch svg{min-width:0}
+}
+
+::selection{background:var(--ink);color:var(--bg)}
+</style>
+<style>
+.wrap{max-width:860px}
+.list{margin-top:40px;border-top:1px solid var(--line)}
+.item{display:flex;gap:22px;align-items:baseline;padding:22px 4px;border-bottom:1px solid var(--line)}
+.item:hover{text-decoration:none;background:var(--bg2)}
+.item .no{flex:0 0 34px;font-size:13px;font-weight:800;color:var(--faint)}
+.item .tt{font-size:clamp(17px,4vw,19px);font-weight:800;letter-spacing:-.015em;color:var(--ink);line-height:1.5}
+.item .ds{margin-top:4px;font-size:14px;font-weight:500;color:var(--body)}
+.foot{margin-top:28px;font-size:13px;color:var(--faint)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumb"><a href="../PORTFOLIO/">포트폴리오</a></nav>
+  <h1>KoDeploy 아키텍처</h1>
+  <p class="pitch">GitHub 저장소를 받아 빌드부터 배포까지 하는 K8s 멀티테넌트 PaaS - 2026년 11월 구조</p>
+
+  <div class="bignums">
+    <div class="bn"><div class="v">노드 3대</div><div class="k">OCI ARM · kubeadm 직접 구성</div></div>
+    <div class="bn"><div class="v">앱 9개</div><div class="k">Argo CD가 관리하는 운영 앱</div></div>
+    <div class="bn"><div class="v">저장소 3개</div><div class="k">코드 · 차트 · 앱별 값</div></div>
+    <div class="bn"><div class="v">0원</div><div class="k">월 클러스터 운영비 (OCI Free Tier)</div></div>
+  </div>
+
+  <nav class="list">
+    <a class="item" href="01-infra.html"><span class="no">01</span><span><span class="tt" style="display:block">전체 인프라</span><span class="ds" style="display:block">Cloudflare · OCI NLB · 노드 3대 위에 무엇이 어디서 도는지</span></span></a>
+    <a class="item" href="02-deploy-flow.html"><span class="no">02</span><span><span class="tt" style="display:block">배포 흐름</span><span class="ds" style="display:block">Core → Builder → BuildKit → kodeploy-apps 커밋 → Argo CD, 14단계 시퀀스</span></span></a>
+    <a class="item" href="03-request-flow.html"><span class="no">03</span><span><span class="tt" style="display:block">요청 흐름</span><span class="ds" style="display:block">앱 방문자 · 플랫폼 사용자 · 운영자의 요청이 들어오는 세 갈래 길</span></span></a>
+    <a class="item" href="04-network-isolation.html"><span class="no">04</span><span><span class="tt" style="display:block">네트워크 격리</span><span class="ds" style="display:block">테넌트 네임스페이스 · Calico 정책 · PSS로 앱끼리, 앱과 플랫폼을 떼어 놓는 방법</span></span></a>
+    <a class="item" href="05-permissions.html"><span class="no">05</span><span><span class="tt" style="display:block">권한 구조</span><span class="ds" style="display:block">Core · Builder · Argo CD · exec 게이트웨이의 RBAC과 admission 정책, Core 전역 권한 35 → 6 · Pod exec 0</span></span></a>
+    <a class="item" href="06-observability.html"><span class="no">06</span><span><span class="tt" style="display:block">관측 · 백업</span><span class="ds" style="display:block">앱 노드와 떼어 둔 모니터링, 플랫폼 DB · etcd의 R2 백업, 인증서 갱신</span></span></a>
+  </nav>
+
+  <p class="foot">각 페이지의 다이어그램은 인라인 SVG라 확대하거나 PDF로 저장해도 선명하다.</p>
+</div>
+</body></html>

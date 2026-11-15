@@ -1,0 +1,222 @@
+ <!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../favicon.png" type="image/png">
+<title>KoDeploy 전체 인프라</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<style>
+:root{
+  --bg:#ffffff; --bg2:#f4f5f7;
+  --ink:#1f2328; --body:#3f4650; --faint:#828d9a;
+  --line:#e4e7eb;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Consolas,"Liberation Mono",monospace;
+  --sans:Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--body);line-height:1.75;font-size:15px;
+  font-weight:500;font-feature-settings:"tnum";-webkit-font-smoothing:antialiased}
+a{color:var(--ink);text-decoration:none;font-weight:600}
+b,strong{font-weight:700;color:var(--ink)}
+.wrap{max-width:1120px;margin:0 auto;padding:56px 24px 72px}
+@media(max-width:600px){.wrap{padding:36px 16px 56px}}
+.crumb{font-size:13px;color:var(--faint);font-weight:600}
+.crumb a{color:var(--faint)}
+.crumb a:hover{color:var(--ink)}
+h1{margin-top:10px;font-size:clamp(28px,6vw,36px);font-weight:800;letter-spacing:-.02em;line-height:1.25;color:var(--ink)}
+.pitch{margin-top:12px;font-size:15.5px;font-weight:600;color:var(--ink)}
+.arch{margin-top:28px;border:1px solid var(--line);border-radius:10px;background:#fff;padding:20px;overflow-x:auto}
+.arch svg{display:block;width:100%;min-width:820px;height:auto}
+.row{margin-top:36px}
+.row-title{font-size:15.5px;font-weight:800;margin-bottom:12px;color:var(--ink);letter-spacing:-.01em}
+.ov{list-style:disc;padding-left:22px}
+.ov li{font-size:14.5px;margin-bottom:7px}
+.ov li::marker{color:var(--faint)}
+.code{font-family:var(--mono);font-size:.86em;background:var(--bg2);border-radius:4px;padding:1.5px 6px;color:var(--ink)}
+.tblwrap{overflow-x:auto;margin:4px 0 12px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}
+th{background:var(--bg2);font-weight:700;font-size:12.5px;white-space:nowrap;color:var(--ink)}
+.bignums{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:20px;margin-top:26px}
+.bn .v{font-size:clamp(23px,5vw,28px);font-weight:800;letter-spacing:-.02em;color:var(--ink);line-height:1.2}
+.bn .k{font-size:13px;color:var(--faint);margin-top:4px}
+.pager{display:flex;justify-content:space-between;gap:16px;margin-top:52px;padding-top:22px;border-top:1px solid var(--line);font-size:14px}
+.pager a{text-decoration:underline;text-decoration-color:#ccd1d8;text-decoration-thickness:1px;text-underline-offset:4px}
+.pager a:hover{text-decoration-color:var(--ink)}
+@page{size:A4 landscape;margin:12mm}
+@media print{
+  html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .wrap{max-width:none;padding:0}
+  .pager,.crumb{display:none}
+  .arch{break-inside:avoid;overflow:visible}
+  .arch svg{min-width:0}
+}
+
+::selection{background:var(--ink);color:var(--bg)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumb"><a href="index.html">KoDeploy 아키텍처</a> · 01 / 06</nav>
+  <h1>전체 인프라</h1>
+  <p class="pitch">OCI ARM 노드 3대(Always Free 한도 4 OCPU · 24GB) 위에 kubeadm으로 직접 구성한 클러스터와, 그 앞뒤를 맡는 Cloudflare</p>
+
+  <figure class="arch">
+<svg viewBox="0 0 1200 760" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="KoDeploy 전체 인프라: Cloudflare, OCI NLB, Kubernetes 클러스터 3노드(관리 접속은 master의 cloudflared)와 외부 서비스">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#3f4650"/></marker>
+    <marker id="ahd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#9aa3ae"/></marker>
+    <marker id="ahn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#d1495b"/></marker>
+  </defs>
+  <style>
+    text{font-family:Pretendard,-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+    .z{fill:none;stroke:#cdd2d9;stroke-width:1.4}
+    .zk{fill:none;stroke:#5b84d6;stroke-width:1.6}
+    .zc{fill:none;stroke:#f38020;stroke-width:1.6}
+    .zd{fill:#fff;stroke:#b9c0cb;stroke-width:1.2;stroke-dasharray:5 4}
+    .zn{fill:#fff;stroke:#d1495b;stroke-width:1.2;stroke-dasharray:5 4}
+    .zl{font-size:15px;font-weight:700;fill:#1f2328}
+    .zlk{font-size:15px;font-weight:700;fill:#4a74c9}
+    .zlc{font-size:15px;font-weight:700;fill:#e0701a}
+    .b{fill:#fff;stroke:#d7dbe1;stroke-width:1.2}
+    .bk{fill:#fff;stroke:#5b84d6;stroke-width:1.3}
+    .bc{fill:#fff;stroke:#f38020;stroke-width:1.3}
+    .hl{fill:#f4f5f7}
+    .f{fill:#f4f5f7}
+    .t{font-size:13px;font-weight:700;fill:#1f2328}
+    .t2{font-size:12px;font-weight:700;fill:#1f2328}
+    .tn{font-size:13px;font-weight:700;fill:#d1495b}
+    .s{font-size:11px;font-weight:500;fill:#828d9a}
+    .l{font-size:12px;font-weight:500;fill:#3f4650;white-space:pre}
+    .sb{font-size:12px;font-weight:800;fill:#9aa3ae;letter-spacing:.04em}
+    .m{text-anchor:middle}
+    .a{fill:none;stroke:#3f4650;stroke-width:1.4;marker-end:url(#ah)}
+    .ad{fill:none;stroke:#9aa3ae;stroke-width:1.3;stroke-dasharray:5 4;marker-end:url(#ahd)}
+    .an{fill:none;stroke:#d1495b;stroke-width:1.3;stroke-dasharray:5 4;marker-end:url(#ahn)}
+    .ln{fill:none;stroke:#3f4650;stroke-width:1.4}
+    .nln{fill:none;stroke:#d1495b;stroke-width:1.3;stroke-dasharray:5 4}
+    .sep{fill:none;stroke:#e4e7eb;stroke-width:1}
+    .life path{fill:none;stroke:#d7dbe1;stroke-width:1.2;stroke-dasharray:3 4}
+    .al{font-size:11px;font-weight:600;fill:#3f4650;paint-order:stroke;stroke:#fff;stroke-width:4px;stroke-linejoin:round}
+    .no{font-size:13px;font-weight:800;fill:#d1495b}
+    .ok{font-size:13px;font-weight:800;fill:#2f9e63}
+    .nl{font-size:11px;font-weight:600;fill:#d1495b}
+    .ic{fill:none;stroke:#1f2328;stroke-width:1.6}
+  </style>
+
+  <!-- 사람 -->
+  <circle class="ic" cx="60" cy="226" r="9"/><path class="ic" d="M44 256a16 14 0 0 1 32 0"/>
+  <text class="t m" x="60" y="278">사용자</text><text class="s m" x="60" y="295">방문자 · 개발자</text>
+  <circle class="ic" cx="60" cy="530" r="9"/><path class="ic" d="M44 560a16 14 0 0 1 32 0"/>
+  <text class="t m" x="60" y="582">관리자</text><text class="s m" x="60" y="599">운영자 1명</text>
+
+  <!-- Cloudflare -->
+  <rect class="zc" x="130" y="110" width="250" height="520" rx="16"/>
+  <text class="zlc" x="150" y="138">Cloudflare</text>
+  <rect class="b" x="150" y="156" width="210" height="50" rx="9"/>
+  <text class="t m" x="255" y="177">DNS · 프록시</text><text class="s m" x="255" y="195">*.kodeploy.com · 커스텀 도메인</text>
+  <rect class="b" x="150" y="218" width="210" height="50" rx="9"/>
+  <text class="t m" x="255" y="239">TLS · WAF</text><text class="s m" x="255" y="257">origin 검증 헤더 주입</text>
+  <rect class="b" x="150" y="280" width="210" height="50" rx="9"/>
+  <text class="t m" x="255" y="301">Workers</text><text class="s m" x="255" y="319">웹 콘솔 app.kodeploy.com</text>
+  <rect class="b" x="150" y="342" width="210" height="50" rx="9"/>
+  <text class="t m" x="255" y="363">R2</text><text class="s m" x="255" y="381">앱 버킷 · 플랫폼 백업</text>
+  <rect class="b" x="150" y="512" width="210" height="50" rx="9"/>
+  <text class="t m" x="255" y="533">Tunnel</text><text class="s m" x="255" y="551">ssh.kodeploy.com · outbound only</text>
+
+  <path class="a" d="M84 243H148"/>
+  <path class="a" d="M84 537H148"/>
+
+  <!-- OCI -->
+  <rect class="z" x="410" y="40" width="770" height="620" rx="18"/>
+  <text class="zl" x="430" y="68">Oracle Cloud</text>
+  <text class="s" x="540" y="68">ARM 3대 · Always Free 한도 4 OCPU/24GB 안 · 노드 공인 IP 없음</text>
+
+  <rect class="b" x="430" y="155" width="150" height="68" rx="9"/>
+  <text class="t m" x="505" y="183">Network LB</text><text class="s m" x="505" y="201">Cloudflare IP의 80·443만</text>
+  <path class="a" d="M360 243H395V189H428"/>
+
+  <path class="a" d="M360 537H395V384H966V300H990"/>
+  <text class="al" x="420" y="376">관리 접속 (SSH) → master</text>
+
+  <!-- Kubernetes -->
+  <rect class="zk" x="610" y="80" width="555" height="560" rx="16"/>
+  <text class="zlk" x="630" y="108">Kubernetes 클러스터</text>
+  <text class="s" x="782" y="108">kubeadm · Calico IPIP · Gateway API</text>
+
+  <!-- worker1 -->
+  <rect class="b" x="630" y="124" width="330" height="252" rx="12"/>
+  <text class="t" x="645" y="148">worker1</text><text class="s" x="705" y="148">2 OCPU · 10GB · 공통 플랫폼</text>
+  <rect class="f" x="642" y="160" width="147" height="96" rx="8"/>
+  <text class="t m" x="715.5" y="198">Envoy</text><text class="s m" x="715.5" y="216">데이터 플레인</text><text class="s m" x="715.5" y="232">TLS 종료 · 라우팅</text>
+  <rect class="f" x="801" y="160" width="147" height="28" rx="7"/><text class="t2 m" x="874.5" y="178">Core API</text>
+  <rect class="f" x="801" y="194" width="147" height="28" rx="7"/><text class="t2 m" x="874.5" y="212">플랫폼 MySQL</text>
+  <rect class="f" x="801" y="228" width="147" height="28" rx="7"/><text class="t2 m" x="874.5" y="246">vmagent</text>
+  <rect class="f" x="642" y="268" width="306" height="96" rx="8"/>
+  <text class="t m" x="795" y="306">테넌트 앱 · DB · Redis</text><text class="s m" x="795" y="325">앱마다 네임스페이스 하나 (app-xxxxxxxx)</text>
+  <path class="a" d="M580 208H640"/>
+  <path class="a" d="M715.5 256V266"/>
+
+  <!-- worker2 -->
+  <rect class="b" x="630" y="392" width="330" height="232" rx="12"/>
+  <text class="t" x="645" y="416">worker2</text><text class="s" x="705" y="416">1 OCPU · 10GB · 배포 파이프라인 · 모니터링</text>
+  <rect class="f" x="642" y="428" width="147" height="28" rx="7"/><text class="t2 m" x="715.5" y="446">Argo CD</text>
+  <rect class="f" x="801" y="428" width="147" height="28" rx="7"/><text class="t2 m" x="874.5" y="446">Builder (Go)</text>
+  <rect class="f" x="642" y="462" width="147" height="28" rx="7"/><text class="t2 m" x="715.5" y="480">Envoy Gateway</text>
+  <rect class="f" x="801" y="462" width="147" height="28" rx="7"/><text class="t2 m" x="874.5" y="480">local-path 스토리지</text>
+  <rect class="f" x="642" y="496" width="147" height="28" rx="7"/><text class="t2 m" x="715.5" y="514">VictoriaMetrics</text>
+  <rect class="f" x="801" y="496" width="147" height="28" rx="7"/><text class="t2 m" x="874.5" y="514">Grafana</text>
+  <rect class="f" x="642" y="532" width="306" height="80" rx="8"/>
+  <text class="t m" x="795" y="568">테넌트 앱 · DB · Redis</text><text class="s m" x="795" y="587">스케줄러가 두 워커에 나눠 배치</text>
+
+  <!-- master -->
+  <rect class="b" x="980" y="124" width="165" height="228" rx="12"/>
+  <text class="t" x="995" y="148">master</text><text class="s" x="1050" y="148">1 OCPU · 4GB</text>
+  <rect class="f" x="992" y="160" width="141" height="28" rx="7"/><text class="t2 m" x="1062.5" y="178">kube-apiserver</text>
+  <rect class="f" x="992" y="194" width="141" height="28" rx="7"/><text class="t2 m" x="1062.5" y="212">etcd · Secret 암호화</text>
+  <rect class="f" x="992" y="228" width="141" height="28" rx="7"/><text class="t2 m" x="1062.5" y="246">스케줄러 · 컨트롤러</text>
+  <text class="s" x="995" y="278">호스트 (systemd)</text>
+  <rect class="f" x="992" y="286" width="141" height="28" rx="7"/><text class="t2 m" x="1062.5" y="304">cloudflared · SSH</text>
+  <rect class="f" x="992" y="320" width="141" height="28" rx="7"/><text class="t2 m" x="1062.5" y="338">인증서 · etcd timer</text>
+
+  <!-- 빌드 -->
+  <rect class="zd" x="980" y="368" width="165" height="88" rx="12"/>
+  <text class="t m" x="1062.5" y="396">BuildKit Job</text><text class="s m" x="1062.5" y="414">kodeploy-build ns</text><text class="s m" x="1062.5" y="430">빌드마다 생성 · rootless</text>
+  <path class="ad" d="M948 442H978"/>
+
+  <!-- 공통 -->
+  <rect class="b" x="980" y="474" width="165" height="150" rx="12"/>
+  <text class="t" x="995" y="498">모든 노드</text>
+  <text class="s" x="995" y="522">containerd · kube-proxy</text>
+  <text class="s" x="995" y="540">calico-node (IPIP)</text>
+  <text class="s" x="995" y="558">kubelet</text>
+  <text class="s" x="995" y="576">공인 IP 없음 (사설 서브넷)</text>
+
+  <!-- 외부 -->
+  <text class="zl" x="150" y="718">외부 서비스</text>
+  <rect class="b" x="430" y="686" width="220" height="54" rx="9"/>
+  <text class="t m" x="540" y="708">GitHub</text><text class="s m" x="540" y="726">사용자 저장소 · kodeploy-apps · charts</text>
+  <rect class="b" x="670" y="686" width="170" height="54" rx="9"/>
+  <text class="t m" x="755" y="708">GHCR</text><text class="s m" x="755" y="726">앱 이미지 · 빌드 캐시</text>
+  <rect class="b" x="860" y="686" width="170" height="54" rx="9"/>
+  <text class="t m" x="945" y="708">LLM 게이트웨이</text><text class="s m" x="945" y="726">빌드 실패 원인 진단</text>
+  <path class="ad" d="M700 624V650H540V684"/>
+  <path class="ad" d="M800 624V684"/>
+  <text class="al" x="810" y="677">clone · push · values 커밋 · sync</text>
+</svg>
+  </figure>
+
+  <div class="row">
+    <p class="row-title">구성</p>
+    <ul class="ov">
+      <li><b>노드 3대</b> - master · worker1 · worker2, 합계 4 OCPU · 24GB로 OCI Always Free 한도에 맞췄다. 노드에는 공인 IP가 없어서, 앱 트래픽은 NLB로, 관리 접속은 master의 cloudflared가 연 Cloudflare Tunnel로만 들어온다.</li>
+      <li><b>역할 분리</b> - 공통 플랫폼(Core API · 플랫폼 MySQL · Envoy)은 worker1에, 배포 파이프라인(Argo CD · Builder)과 모니터링은 worker2에 있다. 테넌트 앱은 두 워커에 나뉘어 뜬다. master 호스트에는 클러스터 밖 일(SSH 터널, 인증서 갱신 · etcd 스냅샷 timer)만 systemd로 돈다.</li>
+      <li><b>빌드</b> - BuildKit Job은 빌드마다 <span class="code">kodeploy-build</span> 네임스페이스에 생기고 끝나면 지워진다. rootless로 돌고, 사설망과 메타데이터 주소에는 닿지 못한다.</li>
+      <li><b>관측</b> - VictoriaMetrics와 Grafana는 worker2에 고정했다. 앱과 플랫폼 MySQL이 몰린 worker1과 떼어 놓아, worker1이 죽어도 장애 직전 메트릭을 볼 수 있다. 2026년 11월 클러스터 밖 노드(managed)를 없애면서 클러스터 안으로 들였고, 클러스터 전체가 죽으면 같이 안 보이는 건 감수했다.</li>
+      <li><b>Cloudflare</b> - DNS · TLS · WAF와 커스텀 도메인(Cloudflare for SaaS)을 맡는다. 웹 콘솔은 Workers 정적 호스팅이고, 앱 오브젝트 스토리지와 플랫폼 백업은 R2에 둔다.</li>
+    </ul>
+  </div>
+
+  <nav class="pager"><a href="index.html">← 목차</a><a href="02-deploy-flow.html">배포 흐름 →</a></nav>
+</div>
+</body></html>

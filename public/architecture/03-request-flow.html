@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../favicon.png" type="image/png">
+<title>KoDeploy 요청 흐름</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<style>
+:root{
+  --bg:#ffffff; --bg2:#f4f5f7;
+  --ink:#1f2328; --body:#3f4650; --faint:#828d9a;
+  --line:#e4e7eb;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Consolas,"Liberation Mono",monospace;
+  --sans:Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--body);line-height:1.75;font-size:15px;
+  font-weight:500;font-feature-settings:"tnum";-webkit-font-smoothing:antialiased}
+a{color:var(--ink);text-decoration:none;font-weight:600}
+b,strong{font-weight:700;color:var(--ink)}
+.wrap{max-width:1120px;margin:0 auto;padding:56px 24px 72px}
+@media(max-width:600px){.wrap{padding:36px 16px 56px}}
+.crumb{font-size:13px;color:var(--faint);font-weight:600}
+.crumb a{color:var(--faint)}
+.crumb a:hover{color:var(--ink)}
+h1{margin-top:10px;font-size:clamp(28px,6vw,36px);font-weight:800;letter-spacing:-.02em;line-height:1.25;color:var(--ink)}
+.pitch{margin-top:12px;font-size:15.5px;font-weight:600;color:var(--ink)}
+.arch{margin-top:28px;border:1px solid var(--line);border-radius:10px;background:#fff;padding:20px;overflow-x:auto}
+.arch svg{display:block;width:100%;min-width:820px;height:auto}
+.row{margin-top:36px}
+.row-title{font-size:15.5px;font-weight:800;margin-bottom:12px;color:var(--ink);letter-spacing:-.01em}
+.ov{list-style:disc;padding-left:22px}
+.ov li{font-size:14.5px;margin-bottom:7px}
+.ov li::marker{color:var(--faint)}
+.code{font-family:var(--mono);font-size:.86em;background:var(--bg2);border-radius:4px;padding:1.5px 6px;color:var(--ink)}
+.tblwrap{overflow-x:auto;margin:4px 0 12px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}
+th{background:var(--bg2);font-weight:700;font-size:12.5px;white-space:nowrap;color:var(--ink)}
+.bignums{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:20px;margin-top:26px}
+.bn .v{font-size:clamp(23px,5vw,28px);font-weight:800;letter-spacing:-.02em;color:var(--ink);line-height:1.2}
+.bn .k{font-size:13px;color:var(--faint);margin-top:4px}
+.pager{display:flex;justify-content:space-between;gap:16px;margin-top:52px;padding-top:22px;border-top:1px solid var(--line);font-size:14px}
+.pager a{text-decoration:underline;text-decoration-color:#ccd1d8;text-decoration-thickness:1px;text-underline-offset:4px}
+.pager a:hover{text-decoration-color:var(--ink)}
+@page{size:A4 landscape;margin:12mm}
+@media print{
+  html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .wrap{max-width:none;padding:0}
+  .pager,.crumb{display:none}
+  .arch{break-inside:avoid;overflow:visible}
+  .arch svg{min-width:0}
+}
+
+::selection{background:var(--ink);color:var(--bg)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumb"><a href="index.html">KoDeploy 아키텍처</a> · 03 / 06</nav>
+  <h1>요청 흐름</h1>
+  <p class="pitch">앱 방문자 · 플랫폼 사용자 · 운영자, 세 종류의 요청이 들어오는 길</p>
+
+  <figure class="arch">
+<svg viewBox="0 0 1200 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="요청 흐름: 앱 방문자는 Cloudflare, NLB, Envoy를 거쳐 앱 Pod로, 사용자는 웹 콘솔과 Core API로 들어오고 웹 터미널은 Core가 준 1회용 티켓으로 테넌트의 kodeploy-exec에 바로 붙는다. 운영자는 Cloudflare Tunnel과 master 노드의 cloudflared로 들어온다">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#3f4650"/></marker>
+    <marker id="ahd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#9aa3ae"/></marker>
+    <marker id="ahn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#d1495b"/></marker>
+  </defs>
+  <style>
+    text{font-family:Pretendard,-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+    .z{fill:none;stroke:#cdd2d9;stroke-width:1.4}
+    .zk{fill:none;stroke:#5b84d6;stroke-width:1.6}
+    .zc{fill:none;stroke:#f38020;stroke-width:1.6}
+    .zd{fill:#fff;stroke:#b9c0cb;stroke-width:1.2;stroke-dasharray:5 4}
+    .zn{fill:#fff;stroke:#d1495b;stroke-width:1.2;stroke-dasharray:5 4}
+    .zl{font-size:15px;font-weight:700;fill:#1f2328}
+    .zlk{font-size:15px;font-weight:700;fill:#4a74c9}
+    .zlc{font-size:15px;font-weight:700;fill:#e0701a}
+    .b{fill:#fff;stroke:#d7dbe1;stroke-width:1.2}
+    .bk{fill:#fff;stroke:#5b84d6;stroke-width:1.3}
+    .bc{fill:#fff;stroke:#f38020;stroke-width:1.3}
+    .hl{fill:#f4f5f7}
+    .f{fill:#f4f5f7}
+    .t{font-size:13px;font-weight:700;fill:#1f2328}
+    .t2{font-size:12px;font-weight:700;fill:#1f2328}
+    .tn{font-size:13px;font-weight:700;fill:#d1495b}
+    .s{font-size:11px;font-weight:500;fill:#828d9a}
+    .l{font-size:12px;font-weight:500;fill:#3f4650;white-space:pre}
+    .sb{font-size:12px;font-weight:800;fill:#9aa3ae;letter-spacing:.04em}
+    .m{text-anchor:middle}
+    .a{fill:none;stroke:#3f4650;stroke-width:1.4;marker-end:url(#ah)}
+    .ad{fill:none;stroke:#9aa3ae;stroke-width:1.3;stroke-dasharray:5 4;marker-end:url(#ahd)}
+    .an{fill:none;stroke:#d1495b;stroke-width:1.3;stroke-dasharray:5 4;marker-end:url(#ahn)}
+    .ln{fill:none;stroke:#3f4650;stroke-width:1.4}
+    .nln{fill:none;stroke:#d1495b;stroke-width:1.3;stroke-dasharray:5 4}
+    .sep{fill:none;stroke:#e4e7eb;stroke-width:1}
+    .life path{fill:none;stroke:#d7dbe1;stroke-width:1.2;stroke-dasharray:3 4}
+    .al{font-size:11px;font-weight:600;fill:#3f4650;paint-order:stroke;stroke:#fff;stroke-width:4px;stroke-linejoin:round}
+    .no{font-size:13px;font-weight:800;fill:#d1495b}
+    .ok{font-size:13px;font-weight:800;fill:#2f9e63}
+    .nl{font-size:11px;font-weight:600;fill:#d1495b}
+    .ic{fill:none;stroke:#1f2328;stroke-width:1.6}
+  </style>
+  <!-- 1. 앱 방문자 -->
+  <text class="sb" x="20" y="34">앱 방문자</text>
+  <rect class="b" x="20" y="52" width="130" height="60" rx="9"/>
+  <text class="t m" x="85" y="78">방문자</text><text class="s m" x="85" y="96">앱 주소 · 커스텀 도메인</text>
+  <rect class="bc" x="180" y="52" width="190" height="60" rx="9"/>
+  <text class="t m" x="275" y="78">Cloudflare</text><text class="s m" x="275" y="96">DNS · TLS · WAF · 헤더 주입</text>
+  <rect class="b" x="400" y="52" width="150" height="60" rx="9"/>
+  <text class="t m" x="475" y="78">OCI NLB</text><text class="s m" x="475" y="96">:443 → NodePort 30443</text>
+  <rect class="bk" x="580" y="52" width="200" height="60" rx="9"/>
+  <text class="t m" x="680" y="78">Envoy</text><text class="s m" x="680" y="96">TLS 종료 · Host + 헤더 매칭</text>
+  <rect class="bk" x="810" y="52" width="140" height="60" rx="9"/>
+  <text class="t m" x="880" y="78">Service</text><text class="s m" x="880" y="96">슬롯별 (서버 · 정적)</text>
+  <rect class="bk" x="980" y="52" width="200" height="60" rx="9"/>
+  <text class="t m" x="1080" y="78">앱 Pod</text><text class="s m" x="1080" y="96">테넌트 네임스페이스</text>
+  <path class="a" d="M150 82H178"/><path class="a" d="M370 82H398"/><path class="a" d="M550 82H578"/>
+  <path class="a" d="M780 82H808"/><path class="a" d="M950 82H978"/>
+
+  <text class="no" x="400" y="148">✕</text><text class="l" x="420" y="147">Cloudflare 밖에서 NLB 직접 호출 → OCI 보안 목록이 Cloudflare IP의 80·443만 허용</text>
+  <text class="no" x="400" y="172">✕</text><text class="l" x="420" y="171">다른 Cloudflare 계정을 거친 요청 → origin 헤더 값이 달라 Envoy에 맞는 라우트가 없음</text>
+
+  <!-- 2. 플랫폼 사용자 -->
+  <text class="sb" x="20" y="226">플랫폼 사용자</text>
+  <rect class="b" x="20" y="244" width="130" height="60" rx="9"/>
+  <text class="t m" x="85" y="270">사용자</text><text class="s m" x="85" y="288">GitHub 로그인</text>
+  <rect class="bc" x="180" y="244" width="190" height="60" rx="9"/>
+  <text class="t m" x="275" y="270">app.kodeploy.com</text><text class="s m" x="275" y="288">Cloudflare Workers 정적 웹</text>
+  <rect class="b" x="400" y="244" width="150" height="60" rx="9"/>
+  <text class="t m" x="475" y="270">api.kodeploy.com</text><text class="s m" x="475" y="288">위와 같은 길로 Envoy까지</text>
+  <rect class="bk" x="580" y="244" width="200" height="60" rx="9"/>
+  <text class="t m" x="680" y="270">Core API</text><text class="s m" x="680" y="288">세션 · 앱 소유권 확인</text>
+  <rect class="f" x="810" y="220" width="220" height="24" rx="6"/><text class="t2" x="822" y="237">플랫폼 MySQL</text>
+  <rect class="f" x="810" y="248" width="220" height="24" rx="6"/><text class="t2" x="822" y="265">K8s API <tspan class="s" dx="6">테넌트 ns 권한만 · exec 없음</tspan></text>
+  <rect class="f" x="810" y="276" width="220" height="24" rx="6"/><text class="t2" x="822" y="293">Builder <tspan class="s" dx="6">HMAC 서명 요청</tspan></text>
+  <rect class="f" x="810" y="304" width="220" height="24" rx="6"/><text class="t2" x="822" y="321">kodeploy-exec <tspan class="s" dx="6">HMAC 서명 요청</tspan></text>
+  <path class="a" d="M150 274H178"/><path class="a" d="M370 274H398"/><path class="a" d="M550 274H578"/>
+  <path class="ln" d="M780 274H794"/>
+  <path class="a" d="M794 274V232H808"/><path class="a" d="M794 274V260H808"/><path class="a" d="M794 274V288H808"/><path class="a" d="M794 274V316H808"/>
+  <rect class="b" x="1050" y="234" width="130" height="80" rx="9"/>
+  <text class="t2" x="1064" y="254">콘솔 기능</text>
+  <text class="s" x="1064" y="272">로그 · 웹 터미널</text>
+  <text class="s" x="1064" y="288">DB 콘솔 · 메트릭</text>
+  <text class="s" x="1064" y="304">R2 스토리지 브라우저</text>
+  <path class="ad" d="M1030 274H1048"/>
+
+  <!-- 웹 터미널: 티켓만 core에서 받고, 연결은 Envoy에서 테넌트의 kodeploy-exec로 바로 -->
+  <path class="a" d="M475 304V378H578"/>
+  <text class="al" x="486" y="352">/exec/&lt;ns&gt; · 티켓</text>
+  <rect class="bk" x="580" y="350" width="200" height="56" rx="9"/>
+  <text class="t m" x="680" y="374">kodeploy-exec 공개 문</text><text class="s m" x="680" y="392">테넌트 ns마다 하나 (Go)</text>
+  <path class="a" d="M780 378H808"/>
+  <rect class="f" x="810" y="366" width="220" height="24" rx="6"/><text class="t2" x="822" y="383">앱 · DB · Redis Pod <tspan class="s" dx="6">자기 ns만</tspan></text>
+  <text class="s" x="1050" y="374">웹 터미널은 Core를</text>
+  <text class="s" x="1050" y="390">거치지 않는다</text>
+
+  <!-- 3. 운영자 -->
+  <text class="sb" x="20" y="444">운영자</text>
+  <rect class="b" x="20" y="462" width="130" height="60" rx="9"/>
+  <text class="t m" x="85" y="488">관리자</text><text class="s m" x="85" y="506">운영자 1명</text>
+  <rect class="bc" x="180" y="462" width="190" height="60" rx="9"/>
+  <text class="t m" x="275" y="488">Cloudflare Tunnel</text><text class="s m" x="275" y="506">ssh.kodeploy.com · outbound only</text>
+  <rect class="b" x="400" y="462" width="150" height="60" rx="9"/>
+  <text class="t m" x="475" y="488">master 노드</text><text class="s m" x="475" y="506">cloudflared · SSH (호스트)</text>
+  <rect class="f" x="580" y="452" width="220" height="24" rx="6"/><text class="t2" x="592" y="469">kube-apiserver <tspan class="s" dx="6">kubectl (SOCKS)</tspan></text>
+  <rect class="f" x="580" y="480" width="220" height="24" rx="6"/><text class="t2" x="592" y="497">Grafana <tspan class="s" dx="6">port-forward · 외부 노출 없음</tspan></text>
+  <rect class="f" x="580" y="508" width="220" height="24" rx="6"/><text class="t2" x="592" y="525">노드 SSH <tspan class="s" dx="6">ProxyJump</tspan></text>
+  <path class="a" d="M150 492H178"/><path class="a" d="M370 492H398"/>
+  <path class="ln" d="M550 492H564"/>
+  <path class="a" d="M564 492V464H578"/><path class="a" d="M564 492H578"/><path class="a" d="M564 492V520H578"/>
+
+  <text class="s" x="20" y="580">클러스터 노드에는 공인 IP가 없다. 인터넷에서 들어오는 길은 NLB(앱 트래픽)와 Cloudflare Tunnel(관리 접속) 두 개뿐이다.</text>
+</svg>
+  </figure>
+
+  <div class="row">
+    <p class="row-title">읽는 법</p>
+    <ul class="ov">
+      <li><b>앱 방문자</b> - <span class="code">{앱}.kodeploy.com</span> · <span class="code">{앱}-api.kodeploy.com</span>은 와일드카드 DNS로 이미 NLB를 가리켜서, 새 앱도 DNS 작업 없이 바로 열린다. 커스텀 도메인은 Cloudflare for SaaS의 custom hostname으로 같은 길에 합류한다.</li>
+      <li><b>origin 검증</b> - Cloudflare Transform Rule이 비밀 헤더를 붙이고, 모든 HTTPRoute가 그 헤더 값을 매칭 조건으로 가진다. NLB 주소를 알아내 Cloudflare를 우회해도 맞는 라우트가 없다.</li>
+      <li><b>슬롯 두 개</b> - 앱 하나에 서버 슬롯과 정적 슬롯이 있고, 각각 Service · HTTPRoute를 따로 가진다. 정적 슬롯을 켜면 <span class="code">{앱}</span> 주소가 정적으로 넘어가고 서버는 <span class="code">{앱}-api</span>에 남는다.</li>
+      <li><b>플랫폼 사용자</b> - 웹 콘솔은 Workers 정적 웹이고, API 요청만 클러스터로 들어온다. Core는 세션과 앱 소유권을 확인한 뒤에만 K8s API · Builder를 부른다. 사용자에게 kubectl은 없다.</li>
+      <li><b>웹 터미널</b>(앱 셸 · DB · Redis 콘솔) - Core는 앱 주인에게 30초짜리 1회용 티켓만 주고, 브라우저는 그 티켓으로 <span class="code">api.kodeploy.com/exec/&lt;ns&gt;</span>에 붙는다. Envoy가 그 테넌트의 <span class="code">kodeploy-exec</span>로 보내고, 게이트웨이가 자기 ns Pod에만 exec한다. 티켓은 URL이 아니라 WebSocket 서브프로토콜로 넘기고, 이 라우트는 Cookie 헤더를 지워서 플랫폼 세션이 게이트웨이에 닿지 않는다. SQL 실행 · 테이블 탐색 · 덤프 · 복원은 Core가 HMAC 서명 요청으로 같은 게이트웨이의 내부 문(core Pod에서만 열림)에 부탁한다.</li>
+      <li><b>운영자</b> - master 노드 호스트의 cloudflared가 밖으로만 연결을 맺는다. 관리자는 이 터널로 master에 SSH로 들어가 kubectl을 쓰고, 워커는 master를 거쳐(ProxyJump) 들어간다. Grafana는 외부에 열지 않고 port-forward로만 본다.</li>
+    </ul>
+  </div>
+
+  <nav class="pager"><a href="02-deploy-flow.html">← 배포 흐름</a><a href="04-network-isolation.html">네트워크 격리 →</a></nav>
+</div>
+</body></html>

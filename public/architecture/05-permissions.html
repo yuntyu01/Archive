@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../favicon.png" type="image/png">
+<title>KoDeploy 권한 구조</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<style>
+:root{
+  --bg:#ffffff; --bg2:#f4f5f7;
+  --ink:#1f2328; --body:#3f4650; --faint:#828d9a;
+  --line:#e4e7eb;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Consolas,"Liberation Mono",monospace;
+  --sans:Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--body);line-height:1.75;font-size:15px;
+  font-weight:500;font-feature-settings:"tnum";-webkit-font-smoothing:antialiased}
+a{color:var(--ink);text-decoration:none;font-weight:600}
+b,strong{font-weight:700;color:var(--ink)}
+.wrap{max-width:1120px;margin:0 auto;padding:56px 24px 72px}
+@media(max-width:600px){.wrap{padding:36px 16px 56px}}
+.crumb{font-size:13px;color:var(--faint);font-weight:600}
+.crumb a{color:var(--faint)}
+.crumb a:hover{color:var(--ink)}
+h1{margin-top:10px;font-size:clamp(28px,6vw,36px);font-weight:800;letter-spacing:-.02em;line-height:1.25;color:var(--ink)}
+.pitch{margin-top:12px;font-size:15.5px;font-weight:600;color:var(--ink)}
+.arch{margin-top:28px;border:1px solid var(--line);border-radius:10px;background:#fff;padding:20px;overflow-x:auto}
+.arch svg{display:block;width:100%;min-width:820px;height:auto}
+.row{margin-top:36px}
+.row-title{font-size:15.5px;font-weight:800;margin-bottom:12px;color:var(--ink);letter-spacing:-.01em}
+.ov{list-style:disc;padding-left:22px}
+.ov li{font-size:14.5px;margin-bottom:7px}
+.ov li::marker{color:var(--faint)}
+.code{font-family:var(--mono);font-size:.86em;background:var(--bg2);border-radius:4px;padding:1.5px 6px;color:var(--ink)}
+.tblwrap{overflow-x:auto;margin:4px 0 12px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}
+th{background:var(--bg2);font-weight:700;font-size:12.5px;white-space:nowrap;color:var(--ink)}
+.bignums{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:20px;margin-top:26px}
+.bn .v{font-size:clamp(23px,5vw,28px);font-weight:800;letter-spacing:-.02em;color:var(--ink);line-height:1.2}
+.bn .k{font-size:13px;color:var(--faint);margin-top:4px}
+.pager{display:flex;justify-content:space-between;gap:16px;margin-top:52px;padding-top:22px;border-top:1px solid var(--line);font-size:14px}
+.pager a{text-decoration:underline;text-decoration-color:#ccd1d8;text-decoration-thickness:1px;text-underline-offset:4px}
+.pager a:hover{text-decoration-color:var(--ink)}
+@page{size:A4 landscape;margin:12mm}
+@media print{
+  html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .wrap{max-width:none;padding:0}
+  .pager,.crumb{display:none}
+  .arch{break-inside:avoid;overflow:visible}
+  .arch svg{min-width:0}
+}
+
+::selection{background:var(--ink);color:var(--bg)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumb"><a href="index.html">KoDeploy 아키텍처</a> · 05 / 06</nav>
+  <h1>권한 구조</h1>
+  <p class="pitch">클러스터를 만지는 신원은 넷, 각자 필요한 네임스페이스 안에서만 권한을 가진다</p>
+
+  <div class="bignums">
+    <div class="bn"><div class="v">35 → 6</div><div class="k">Core의 클러스터 전역 권한</div></div>
+    <div class="bn"><div class="v">0개</div><div class="k">제약 없는 전역 쓰기 권한</div></div>
+    <div class="bn"><div class="v">0개</div><div class="k">Core의 Pod exec 권한 · 테넌트별 게이트웨이로</div></div>
+    <div class="bn"><div class="v">nodes/stats</div><div class="k">nodes/proxy(kubelet exec 포함) 대신</div></div>
+  </div>
+
+  <figure class="arch">
+<svg viewBox="0 0 1200 892" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="권한 구조: Core는 admission 정책을 거친 전역 권한 6개와 테넌트 네임스페이스별 RoleBinding(Pod exec 없음), Builder는 빌드 네임스페이스와 argocd의 Role, Argo CD는 AppProject 범위 안에서만 배포하고, Pod exec는 테넌트마다 뜨는 kodeploy-exec가 자기 네임스페이스에서만 한다">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#3f4650"/></marker>
+    <marker id="ahd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#9aa3ae"/></marker>
+    <marker id="ahn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#d1495b"/></marker>
+  </defs>
+  <style>
+    text{font-family:Pretendard,-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+    .z{fill:none;stroke:#cdd2d9;stroke-width:1.4}
+    .zk{fill:none;stroke:#5b84d6;stroke-width:1.6}
+    .zc{fill:none;stroke:#f38020;stroke-width:1.6}
+    .zd{fill:#fff;stroke:#b9c0cb;stroke-width:1.2;stroke-dasharray:5 4}
+    .zn{fill:#fff;stroke:#d1495b;stroke-width:1.2;stroke-dasharray:5 4}
+    .zl{font-size:15px;font-weight:700;fill:#1f2328}
+    .zlk{font-size:15px;font-weight:700;fill:#4a74c9}
+    .zlc{font-size:15px;font-weight:700;fill:#e0701a}
+    .b{fill:#fff;stroke:#d7dbe1;stroke-width:1.2}
+    .bk{fill:#fff;stroke:#5b84d6;stroke-width:1.3}
+    .bc{fill:#fff;stroke:#f38020;stroke-width:1.3}
+    .hl{fill:#f4f5f7}
+    .f{fill:#f4f5f7}
+    .t{font-size:13px;font-weight:700;fill:#1f2328}
+    .t2{font-size:12px;font-weight:700;fill:#1f2328}
+    .tn{font-size:13px;font-weight:700;fill:#d1495b}
+    .s{font-size:11px;font-weight:500;fill:#828d9a}
+    .l{font-size:12px;font-weight:500;fill:#3f4650;white-space:pre}
+    .sb{font-size:12px;font-weight:800;fill:#9aa3ae;letter-spacing:.04em}
+    .m{text-anchor:middle}
+    .a{fill:none;stroke:#3f4650;stroke-width:1.4;marker-end:url(#ah)}
+    .ad{fill:none;stroke:#9aa3ae;stroke-width:1.3;stroke-dasharray:5 4;marker-end:url(#ahd)}
+    .an{fill:none;stroke:#d1495b;stroke-width:1.3;stroke-dasharray:5 4;marker-end:url(#ahn)}
+    .ln{fill:none;stroke:#3f4650;stroke-width:1.4}
+    .nln{fill:none;stroke:#d1495b;stroke-width:1.3;stroke-dasharray:5 4}
+    .sep{fill:none;stroke:#e4e7eb;stroke-width:1}
+    .life path{fill:none;stroke:#d7dbe1;stroke-width:1.2;stroke-dasharray:3 4}
+    .al{font-size:11px;font-weight:600;fill:#3f4650;paint-order:stroke;stroke:#fff;stroke-width:4px;stroke-linejoin:round}
+    .no{font-size:13px;font-weight:800;fill:#d1495b}
+    .ok{font-size:13px;font-weight:800;fill:#2f9e63}
+    .nl{font-size:11px;font-weight:600;fill:#d1495b}
+    .ic{fill:none;stroke:#1f2328;stroke-width:1.6}
+  </style>
+  <!-- Core -->
+  <rect class="b hl" x="20" y="110" width="170" height="70" rx="9"/>
+  <text class="t m" x="105" y="140">kodeploy-core</text><text class="s m" x="105" y="158">Core API의 ServiceAccount</text>
+
+  <rect class="bk" x="230" y="30" width="240" height="160" rx="12"/>
+  <text class="t" x="246" y="56">ValidatingAdmissionPolicy</text>
+  <text class="s" x="246" y="74">core가 보낸 쓰기 요청만 골라 검사</text>
+  <text class="l" x="246" y="102">ns 생성</text>
+  <text class="s" x="246" y="120">→ tenant- · app-&lt;hex8&gt; 이름만</text>
+  <text class="l" x="246" y="148">RoleBinding 생성</text>
+  <text class="s" x="246" y="166">→ 테넌트 ns · 자기 자신 · 지정 롤만</text>
+  <path class="a" d="M190 130H228"/>
+
+  <rect class="b" x="510" y="30" width="300" height="160" rx="12"/>
+  <text class="t" x="526" y="56">전역 ClusterRole</text><text class="s" x="640" y="56">6개 · * = 정책이 제한</text>
+  <text class="l" x="526" y="84"><tspan class="t2">namespaces</tspan>  create*</text>
+  <text class="l" x="526" y="106"><tspan class="t2">rolebindings</tspan>  create*</text>
+  <text class="l" x="526" y="128"><tspan class="t2">clusterroles</tspan>  bind* (지정 롤 하나)</text>
+  <text class="l" x="526" y="150"><tspan class="t2">pods · nodes</tspan>  list (읽기)</text>
+  <text class="l" x="526" y="172"><tspan class="t2">nodes/stats</tspan>  get (kubelet 통계만)</text>
+  <path class="a" d="M470 110H508"/>
+
+  <rect class="bk" x="850" y="30" width="330" height="136" rx="12"/>
+  <text class="t" x="866" y="56">테넌트 ns마다 RoleBinding</text>
+  <text class="s" x="866" y="74">core가 ns를 만들 때 자기에게 건다</text>
+  <text class="l" x="866" y="100">secrets get · create · update · delete</text>
+  <text class="l" x="866" y="122">pvc create · pods list · pods/log <tspan class="s">(exec 없음)</tspan></text>
+  <text class="l" x="866" y="144">namespaces delete <tspan class="s">(그 ns 자신만)</tspan></text>
+  <path class="a" d="M810 82H848"/>
+
+  <rect class="b" x="850" y="176" width="330" height="62" rx="12"/>
+  <text class="t" x="866" y="200">kodeploy-build ns의 Role</text>
+  <text class="l" x="866" y="222">ghcr-auth 읽기 · git-auth 쓰기 · jobs · pods list</text>
+  <path class="a" d="M105 180V207H848"/>
+
+  <rect class="zn" x="850" y="250" width="330" height="70" rx="12"/>
+  <text class="tn" x="866" y="274">닿지 않는 곳</text>
+  <text class="l" x="866" y="294">argocd · kube-system · default · monitoring</text>
+  <text class="s" x="866" y="311">ns 읽기 · 삭제 · Secret 읽기 · exec · 로그 모두 403</text>
+  <path class="an" d="M105 207V285H848"/>
+  <text class="no" x="820" y="280">✕</text>
+
+  <path class="sep" d="M20 330H1180"/>
+
+  <!-- Builder -->
+  <rect class="b hl" x="20" y="420" width="170" height="70" rx="9"/>
+  <text class="t m" x="105" y="450">kodeploy-builder</text><text class="s m" x="105" y="468">Builder의 ServiceAccount</text>
+  <path class="ln" d="M190 455H470M470 386V524"/>
+  <path class="a" d="M470 386H508"/><path class="a" d="M470 455H508"/><path class="a" d="M470 524H508"/>
+
+  <rect class="b" x="510" y="358" width="300" height="56" rx="9"/>
+  <text class="t" x="526" y="381">kodeploy-build ns의 Role</text><text class="s" x="526" y="400">jobs 생성 · 감시 · 삭제 · pods · pods/log</text>
+  <rect class="b" x="510" y="427" width="300" height="56" rx="9"/>
+  <text class="t" x="526" y="450">argocd Role</text><text class="s" x="526" y="469">applications get · patch · applicationsets patch</text>
+  <rect class="bk" x="510" y="496" width="300" height="56" rx="9"/>
+  <text class="t" x="526" y="519">앱 ns마다 RoleBinding</text><text class="s" x="526" y="538">pods list · pods/log get · 차트가 그린다</text>
+
+  <rect class="f" x="850" y="358" width="330" height="194" rx="12"/>
+  <text class="t" x="866" y="384">Core와 권한을 나눈 이유</text>
+  <text class="l" x="866" y="412">Builder는 유저 코드를 빌드한다</text>
+  <text class="s" x="866" y="430">→ Secret · 네임스페이스 권한은 주지 않는다</text>
+  <text class="l" x="866" y="458">앱 Pod 읽기는 Argo가 관리하는 ns만</text>
+  <text class="s" x="866" y="476">→ 크래시 판정 · 로그 끝 80줄 용도</text>
+  <text class="l" x="866" y="504">Core ↔ Builder 사이는 서명 요청뿐</text>
+  <text class="s" x="866" y="522">→ 서로의 K8s 권한을 빌려 쓰지 않는다</text>
+
+  <path class="sep" d="M20 576H1180"/>
+
+  <!-- Argo -->
+  <rect class="b hl" x="20" y="600" width="170" height="64" rx="9"/>
+  <text class="t m" x="105" y="628">Argo CD</text><text class="s m" x="105" y="646">application-controller</text>
+  <path class="a" d="M190 632H508"/>
+  <rect class="b" x="510" y="592" width="670" height="92" rx="12"/>
+  <text class="t" x="526" y="614">AppProject kodeploy-apps</text>
+  <text class="l" x="526" y="636">목적지 tenant-* · app-* 네임스페이스만 · 소스 kodeploy-charts · kodeploy-apps만</text>
+  <text class="l" x="526" y="656">만들 수 있는 종류 Namespace · Deployment · StatefulSet · Service · HTTPRoute · NetworkPolicy</text>
+  <text class="l" x="526" y="674">Role · RoleBinding · ServiceAccount <tspan class="s">빌더의 앱 Pod 읽기 · exec 게이트웨이 자기 권한용</tspan></text>
+
+  <path class="sep" d="M20 698H1180"/>
+
+  <!-- kodeploy-exec: 테넌트 ns마다 하나, core 대신 Pod exec를 한다 -->
+  <rect class="b hl" x="20" y="753" width="170" height="70" rx="9"/>
+  <text class="t m" x="105" y="783">kodeploy-exec</text><text class="s m" x="105" y="801">테넌트 ns마다 하나 (Go)</text>
+  <path class="ln" d="M190 788H470M470 742V821"/>
+  <path class="a" d="M470 742H508"/><path class="a" d="M470 821H508"/>
+
+  <rect class="bk" x="510" y="714" width="300" height="56" rx="9"/>
+  <text class="t" x="526" y="737">자기 ns의 Role · 차트가 그린다</text><text class="s" x="526" y="756">pods list · pods/exec get · create · Secret 없음</text>
+  <rect class="bk" x="510" y="784" width="300" height="74" rx="9"/>
+  <text class="t" x="526" y="807">ValidatingAdmissionPolicy</text>
+  <text class="s" x="526" y="826">이 SA로 뜨는 Pod: exec 라벨 · 컨테이너 1개</text>
+  <text class="s" x="526" y="844">이미지 digest 고정 · ephemeral container 금지</text>
+
+  <rect class="f" x="850" y="710" width="330" height="170" rx="12"/>
+  <text class="t" x="866" y="734">Core와 나눈 것</text>
+  <text class="l" x="866" y="762">Core → 내부 문은 HMAC 서명 요청</text>
+  <text class="s" x="866" y="780">→ NetworkPolicy로 core Pod에서만 닿는다</text>
+  <text class="l" x="866" y="808">브라우저 → 공개 문은 1회용 티켓</text>
+  <text class="s" x="866" y="826">→ 30초 · 한 번, Core가 앱 주인에게만 발급</text>
+  <text class="l" x="866" y="854">Core에는 pods/exec가 없다</text>
+  <text class="s" x="866" y="872">→ 터미널 · DB 콘솔 · 덤프 · 복원을 부탁만 한다</text>
+</svg>
+  </figure>
+
+  <div class="row">
+    <p class="row-title">Core 권한이 줄어든 과정</p>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>시점</th><th>클러스터 전역</th><th>네임스페이스 한정</th><th>달라진 점</th></tr></thead>
+        <tbody>
+          <tr><td>v1 (Core가 직접 배포)</td><td>35</td><td>0</td><td>Deployment · StatefulSet · Service · HTTPRoute · NetworkPolicy · Job 쓰기를 모두 가짐</td></tr>
+          <tr><td>v1 경로 제거</td><td>16</td><td>0</td><td>워크로드 쓰기가 빠짐. Secret · exec는 여전히 모든 ns에 닿음</td></tr>
+          <tr><td>테넌트 ns로 한정 (10/31)</td><td>8</td><td>테넌트 9 · 빌드 ns 6</td><td>Secret · exec · 로그는 테넌트 ns에서만, 전역 쓰기 4개는 admission 정책이 모양을 묶음</td></tr>
+          <tr><td>ns 권한 축소 (11/8)</td><td>6</td><td>테넌트 10 · 빌드 ns 6</td><td>ns 읽기 · 삭제도 전역에서 빠짐. 삭제는 그 ns의 RoleBinding으로, 빌드 ns Secret 읽기는 ghcr-auth 하나만</td></tr>
+          <tr><td><b>지금</b> (11/13)</td><td><b>6</b></td><td>테넌트 8 · 빌드 ns 6</td><td><b>테넌트 ns의 Pod exec(get · create)도 빠짐</b>. 터미널 · DB 콘솔 · 덤프 · 복원은 테넌트별 kodeploy-exec가 한다</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12.5px;color:var(--faint);margin-top:-4px">권한 1개 = 리소스 1개 × 동작 1개. v1에서 v2로 넘어가는 동안에는 정리용 권한 9개를 잠깐 더해 44개였다.</p>
+  </div>
+
+  <div class="row">
+    <p class="row-title">설계 포인트</p>
+    <ul class="ov">
+      <li><b>RBAC으로 못 하는 건 admission으로</b> - RBAC은 "이 이름 패턴의 ns만"을 표현하지 못해서, ns 생성과 RoleBinding 생성은 전역으로 줄 수밖에 없다. 그 요청의 모양을 ValidatingAdmissionPolicy(CEL)가 검사한다. Core가 털려도 <span class="code">argocd</span> 같은 이름으로 ns를 만들거나 거기에 자기 권한을 걸 수 없다.</li>
+      <li><b>ns 삭제도 RoleBinding으로</b> - ns 안 RoleBinding이 주는 <span class="code">namespaces</span> 권한은 그 ns 객체 하나에만 닿는다. 그래서 삭제를 전역에서 빼고 테넌트 롤에 넣어, Core가 지울 수 있는 ns를 RBAC만으로 "자기 RoleBinding이 걸린 테넌트 ns"로 좁혔다. ns 읽기도 없앴다 - 지운 직후 재배포할 때의 Terminating 대기는, RoleBinding 생성이 <span class="code">NamespaceTerminating</span> 사유로 거절되는지로 판정한다.</li>
+      <li><b>읽기는 RBAC으로만</b> - Secret 읽기는 admission을 거치지 않는다. 그래서 이 권한은 ClusterRole로 정의만 하고, 테넌트 ns마다 RoleBinding으로 건다. Core는 ns를 만들 때 자기 RoleBinding부터 걸고, 권한이 반영될 때까지 SelfSubjectAccessReview로 기다린 뒤 Secret을 쓴다.</li>
+      <li><b>exec는 권한을 좁히는 대신 떼어 냈다</b> - Pod exec는 RoleBinding으로 ns를 좁혀도 "그 ns의 아무 Pod에 아무 명령"이다. 그래서 Core에서 빼고, 테넌트 ns마다 뜨는 <span class="code">kodeploy-exec</span>(Go)가 자기 ns Pod에 정해진 작업만 한다. Core는 HMAC 서명 요청과 1회용 티켓 발급만 하고, 터미널 바이트는 Core를 거치지 않는다. 게이트웨이 SA에는 Secret 권한이 없어서 DB 비밀번호는 DB 컨테이너의 env에서 읽고, pods/exec를 가진 SA라 VAP가 그 SA로 뜰 수 있는 Pod를 이미지 digest까지 묶는다.</li>
+      <li><b>kubelet은 통계만</b> - 관리자 노드 현황은 <span class="code">nodes/proxy</span> 대신 kubelet <span class="code">/stats/summary</span>를 직접 부르고 <span class="code">nodes/stats</span>만 쓴다. kubelet 서빙 인증서는 노드마다 자체 CA라, 그 CA들을 ConfigMap으로 모아 TLS를 검증한다.</li>
+      <li><b>검증</b> - 적용할 때마다 Core SA로 위장한 <span class="code">kubectl auth can-i</span>와 server dry-run으로 허용 · 거부를 하나씩 확인했고, 적용 뒤 403은 0건이었다. 10/31에는 임시 ns를 Core 함수로 만들고 지워 실제 경로를 확인했고, 11/8의 ns 권한 축소는 운영과 같은 버전(K8s 1.35)의 로컬 클러스터에서 Core 함수로 삭제 직후 재배포까지 돌려 확인했다. 11/13 exec 회수는 can-i 대신 실제 exec 요청으로 확인했다(회수 전 허용 → 회수 뒤 403). exec 연결은 GET으로 열리지만 create로 인가돼서, 묻는 동작에 따라 can-i 답과 실제 판정이 어긋난다 - get만 남겨 봤을 때 can-i는 허용, 실제 연결은 403이었다.</li>
+    </ul>
+  </div>
+
+  <nav class="pager"><a href="04-network-isolation.html">← 네트워크 격리</a><a href="06-observability.html">관측 · 백업 →</a></nav>
+</div>
+</body></html>
