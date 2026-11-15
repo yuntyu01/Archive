@@ -1,14 +1,14 @@
 ---
 title: "patch로는 지울 수 없었다 - 명령형 배포를 Argo CD 선언형 배포로"
 date: "2026-11-14"
-description: "포트를 바꾼 재배포가 422로 막혔습니다. patch로는 지울 값을 표현할 수 없어 Argo CD로 옮겼고, API 서버 전역 권한을 35개에서 6개로 줄였습니다."
+description: "사용자가 런타임을 바꿔 재배포하자 Service가 422로 막혔습니다. 옛 포트를 지우지 못하는 patch 배포를 Argo CD 선언형 배포로 바꾸면서 API 서버 전역 권한을 35개에서 16개로 줄였고, 이어서 6개까지 줄였습니다."
 tags: ["Argo CD", "Server-Side Apply", "GitOps", "Kubernetes"]
 series: "KoDeploy"
 thumbnail: "/images/thumbs/argocd-declarative-deploy.webp"
 ---
 > **요약**
 >
-> - 포트를 바꾼 재배포에서 Service가 `422`로 거부됐습니다. strategic merge patch가 옛 포트를 남긴 게 원인이었습니다.
+> - 사용자가 런타임을 바꿔 재배포하자 Service가 `422`로 거부됐습니다. strategic merge patch가 옛 포트를 남긴 게 원인이었습니다.
 > - core가 보내는 patch에는 이제 없어야 할 값이 담기지 않았고, 그동안 replace 분기를 하나씩 늘려 온 것도 같은 이유였습니다.
 > - replace 분기 추가, core에서 server-side apply, Argo CD를 비교해 Argo CD로 옮겼습니다.
 > - 운영 앱 10개를 재생성 없이 넘긴 뒤 기존 배포 코드 3.9천 줄을 지웠고, API 서버의 클러스터 전역 권한은 35개에서 16개로, 이어서 6개로 줄었습니다.
@@ -25,7 +25,7 @@ KoDeploy는 GitHub 링크를 넣으면 빌드부터 배포까지 해 주는 K8s 
 
 ## 포트 변경 배포에서 난 Service 422 (7/15)
 
-7월 15일, 운영 중이던 앱을 Java 런타임(8080)에서 그날 추가한 JavaScript 런타임(3000)으로 바꿔 다시 배포하자 Service 업데이트가 `422`로 거부됐습니다.
+7월 15일, 한 사용자가 운영 중이던 자기 앱을 Java(8080)에서 JavaScript(3000)로 바꿔 다시 배포했는데, Service 업데이트가 `422`로 거부됐습니다.
 
 core는 Service를 strategic merge patch로 갱신하고 있었습니다. `Service.spec.ports`는 포트 번호를 병합 키로 쓰기 때문에, 3000을 보내면 API 서버는 8080 항목을 3000으로 바꾸지 않고 3000 항목을 하나 더 추가합니다.
 
@@ -47,31 +47,24 @@ spec:
 
 포트가 두 개인 Service는 포트마다 이름이 있어야 하는데, 템플릿의 포트에는 이름이 없어서 요청이 거부됐습니다.
 
-나중에 로컬에서 재현해 보니 Service가 거부될 때 Deployment는 이미 3000으로 바뀌어 있었습니다. 리소스마다 따로 적용하기 때문에 중간에 하나가 실패하면 앞의 것만 바뀐 채로 멈춥니다. 컨테이너는 3000에서 요청을 받는데 Service는 계속 8080으로 보내니 앱이 응답하지 않았습니다.
+나중에 로컬에서 재현해 보니 Service가 거부될 때 Deployment는 이미 3000으로 바뀌어 있었습니다. core는 Deployment, Service, HTTPRoute 순서로 API를 하나씩 불렀기 때문에, 중간에 하나가 실패하면 앞의 것만 바뀐 채로 멈춥니다. 컨테이너는 3000에서 요청을 받는데 Service는 계속 8080으로 보내니 앱이 응답하지 않았습니다.
 
 그날은 Service를 읽은 뒤 포트 목록을 통째로 바꿔 끼우는 replace로 고쳤습니다. 고치고 나서 보니 비슷한 분기가 이미 여러 개 있었습니다.
 
 ## patch, replace, apply의 동작
 
-K8s API로 이미 있는 객체를 바꾸는 방법은 크게 세 가지입니다. 바꿀 부분만 보내는 patch, 객체 전체를 보내는 replace, 원하는 상태 전체를 보내고 차이 계산은 API 서버에 맡기는 server-side apply(SSA)입니다. patch는 다시 형식이 몇 가지로 나뉩니다.
+K8s API로 이미 있는 객체를 바꾸는 방법은 크게 세 가지입니다. 바꿀 부분만 보내는 patch, 객체 전체를 보내는 replace, 원하는 상태 전체를 보내고 차이 계산은 API 서버에 맡기는 server-side apply(SSA)입니다. patch는 다시 형식이 몇 가지로 나뉘는데, 자주 쓰는 것은 strategic merge patch와 JSON merge patch입니다.
 
-| 방식 | 보내는 것 | 목록 필드 처리 | 값 지우기 |
-| --- | --- | --- | --- |
-| strategic merge patch | 바꿀 부분 | 병합 키가 정해진 목록은 키 기준으로 합침 (Service 포트는 포트 번호) | `$patch: delete` 같은 지시어를 직접 넣어야 함 |
-| JSON merge patch | 바꿀 부분 | 목록을 통째로 교체 | 지울 키에 `null`을 보냄 |
-| replace (PUT) | 객체 전체 | 보낸 목록으로 교체 | 보내지 않은 필드는 사라짐 |
-| server-side apply | 원하는 상태 전체 | 필드마다 누가 썼는지 기록 | 같은 주체가 지난번에 보냈다가 이번에 뺀 필드를 서버가 지움 |
+Service 포트를 8080에서 3000으로 바꾸는 같은 요청을 각 방식으로 보내면 결과가 이렇게 갈립니다. 처음부터 같은 방식으로 적용해 왔다고 가정합니다.
 
-처음부터 각 방식으로 적용해 왔다고 할 때, Service 포트를 8080에서 3000으로 바꾸는 같은 요청의 결과는 이렇게 갈립니다.
+| 방식 | 보내는 내용 | 결과 |
+| --- | --- | --- |
+| strategic merge patch | 포트 목록에 3000 하나 | 8080과 3000이 둘 다 남음. 포트 번호로 항목을 맞춰 합치는데, 8080은 이번 요청에 없어서 그대로 둠 |
+| JSON merge patch | 포트 목록에 3000 하나 | 3000만 남음. 목록은 합치지 않고 통째로 바꿈 |
+| replace | 읽어 온 Service에서 포트만 바꾼 객체 전체 | 3000만 남음. 보낸 객체가 그대로 새 상태가 됨 |
+| server-side apply | 원하는 Service 전체와 보내는 주체 이름 | 3000만 남음. core가 지난번에 보낸 8080이 이번에 빠져서 API 서버가 지움 |
 
-| 방식 | 결과 |
-| --- | --- |
-| strategic merge patch | 8080과 3000이 둘 다 남음 |
-| JSON merge patch | 3000만 남음 (목록 전체가 바뀜) |
-| replace | 3000만 남음 |
-| server-side apply | 3000만 남음 (8080은 같은 주체가 지난번에 보낸 값이라 제거) |
-
-patch로도 값을 지울 수는 있습니다. 다만 무엇을 지울지 클라이언트가 직접 적어 보내야 하고, 그러려면 지난번에 무엇을 보냈는지 알아야 합니다. `kubectl apply`(클라이언트 쪽 apply)가 객체에 `kubectl.kubernetes.io/last-applied-configuration` 주석으로 지난번 설정을 남겨 두고, 이번 설정과 비교해 삭제 지시어를 만들어 보내는 이유가 이것입니다. core는 지금 원하는 상태만 strategic merge patch로 보냈고 지난번에 보낸 내용은 기록하지 않았기 때문에, 빠져야 할 값을 patch에 담을 방법이 없었습니다.
+patch로도 값을 지울 수는 있습니다. strategic merge patch라면 8080 항목에 `$patch: delete`를 붙여 함께 보내면 됩니다. 다만 무엇을 지울지 클라이언트가 직접 적어 보내야 하고, 그러려면 지난번에 무엇을 보냈는지 알아야 합니다. `kubectl apply`(클라이언트 쪽 apply)가 객체에 `kubectl.kubernetes.io/last-applied-configuration` 주석으로 지난번 설정을 남겨 두고, 이번 설정과 비교해 삭제 지시어를 만들어 보내는 이유가 이것입니다. core는 지금 원하는 상태만 strategic merge patch로 보냈고 지난번에 보낸 내용은 기록하지 않았기 때문에, 빠져야 할 값을 patch에 담을 방법이 없었습니다.
 
 server-side apply는 이 기록을 API 서버가 대신 남깁니다. 클라이언트는 `fieldManager`라는 이름을 붙여 원하는 상태를 보내고, API 서버는 객체의 `metadata.managedFields`에 어느 이름이 어느 필드를 썼는지 필드 단위로 적어 둡니다. Service 포트처럼 키가 있는 목록은 항목마다 따로 기록합니다.
 
@@ -127,9 +120,9 @@ metadata:
 | 적용 주체 | 외부 요청을 받는 core | 외부 요청을 받는 core | 외부 요청이 닿지 않는 Argo CD |
 | 추가되는 것 | 없음 | 없음 | Argo CD 컴포넌트, Git 저장소 2개 |
 
-처음에는 B가 가장 나아 보였습니다. 앞에서 본 것처럼 core가 SSA로 적용하면 지난번에 보냈다가 이번에 빠진 필드를 API 서버가 지워 주니, 7/15의 8080 항목도 다음 적용 때 사라집니다. 코드도 거의 그대로 둘 수 있습니다.
+처음에는 B가 가장 나아 보였습니다. 새 컴포넌트 없이 적용 방식만 SSA로 바꾸면 7/15 같은 문제가 풀리고, 코드도 거의 그대로 둘 수 있었습니다.
 
-하지만 B는 표의 첫 줄만 해결합니다. 정적 슬롯을 꺼서 Service와 HTTPRoute를 지워야 할 때는 무엇을 만들었는지 따로 기록해 두고 지워야 합니다. 플랫폼 정책은 여전히 앱을 다시 배포해야 반영되니 전체 앱을 돌며 다시 적용하는 루프가 필요하고, 손으로 바꾼 값을 되돌리려면 그 루프를 주기적으로 돌려야 합니다. 이것을 모두 만들면 core 안에 Argo CD를 하나 더 만드는 것과 비슷해집니다. 적용 주체도 여전히 core라서 권한은 줄지 않습니다.
+하지만 B는 표의 첫 줄만 해결합니다. 외부 요청을 받는 core가 쓰기 권한을 그대로 들고 있어야 하고, 리소스 삭제와 재적용 루프도 직접 만들어야 했습니다. 이것까지 만들면 core 안에 Argo CD를 하나 더 만드는 것과 비슷해서 부담이 적지 않았습니다.
 
 ## Argo CD를 고른 이유
 
@@ -148,6 +141,8 @@ metadata:
 | `kodeploy` | 플랫폼 | core, 빌더, 웹, 설치 자동화 |
 | `kodeploy-charts` | 앱을 배포하는 형태 | Helm 차트, 플랫폼 정책(`platform/`), AppProject |
 | `kodeploy-apps` | 앱마다 배포할 값 | 앱별 `values.yaml` (이미지 digest, 런타임, 포트, 도메인) |
+
+비밀번호 같은 Secret 값은 Git에 넣지 않고 core가 클러스터에 직접 씁니다. `kodeploy-apps`에는 사용자 ID와 도메인이 들어 있어서 비공개 저장소로 뒀습니다.
 
 차트 안에서도 정하는 주체를 나눴습니다. 앱 이름, 이미지, 런타임 같은 앱별 값은 values에 두고, 런타임별 기본 포트와 메모리 상한 같은 플랫폼 정책은 `platform/`에, 리소스의 형태는 `templates/`에 둡니다. values 스키마는 정해진 필드 외의 값을 받지 않기 때문에(`additionalProperties: false`) 앱 values로 플랫폼 정책을 덮어쓸 수 없습니다.
 
@@ -203,15 +198,33 @@ spec:
 
 ## 남은 권한
 
-적용을 Argo CD로 넘기고 기존 경로를 지우면서 워크로드 쓰기 권한이 모두 빠졌고, core의 클러스터 전역 권한은 35개에서 16개가 됐습니다. 남은 16개는 Git에 적을 수 없는 작업에 쓰입니다. 앱 환경변수가 든 Secret, 볼륨(PVC), 앱을 지울 때의 네임스페이스 삭제, 웹 터미널과 DB 콘솔이 쓰는 Pod exec입니다. 이 권한들은 모든 네임스페이스에 걸려 있어서, argocd나 kube-system의 Secret도 이름만 알면 읽을 수 있었습니다.
+적용을 Argo CD로 넘기고 기존 경로를 지우면서 core의 클러스터 전역 권한은 35개에서 16개가 됐습니다.
 
-이 16개는 Argo CD로 옮길 수 없어서 적용 범위를 테넌트 네임스페이스 안으로 좁혔습니다. 네임스페이스마다 RoleBinding으로 권한을 걸고, 그 과정에서 새로 필요해진 전역 권한은 ValidatingAdmissionPolicy로 제한해 전역 권한을 6개로 줄였습니다. 테넌트 안에 남은 Pod exec는 테넌트별 게이트웨이로 분리했습니다. 자세한 과정은 [다음 글](/blog/rbac-rolebinding-vap/)에 정리했습니다.
+| 묶음 | 권한 | 쓰는 곳 | Argo CD 전환 후 |
+| --- | --- | --- | --- |
+| Deployment | get, create, update, patch, delete, 상태 get | 앱 배포, 환경변수 변경 뒤 재기동, 롤아웃 대기 | 빠짐 |
+| StatefulSet | create, delete | MySQL, PostgreSQL | 빠짐 |
+| Service | get, create, update, delete | 앱 Service | 빠짐 |
+| HTTPRoute | create, patch, delete | 앱 서브도메인, 커스텀 도메인 | 빠짐 |
+| NetworkPolicy | create | 테넌트 격리 | 빠짐 |
+| Job | create, delete, 상태 get | 빌드 제출, 재빌드 전 정리, 완료 판정 | 빠짐 (빌드는 빌더로 이전) |
+| Job | list | 빌드 실패 진단 | 남음 |
+| Secret | get, create, update, delete | 앱 환경변수, DB 비밀번호, 이미지 pull 인증 | 남음 |
+| 네임스페이스 | get, create, delete | 앱 생성과 삭제 | 남음 |
+| PVC | create | 앱 볼륨 | 남음 |
+| ResourceQuota | delete | 옛 quota 정리 | 남음 |
+| Pod | list, 로그 get, exec get, exec create | 상태 조회, 로그, 웹 터미널, DB 콘솔 | 남음 (exec는 이후 게이트웨이로 분리) |
+| 노드 | list, `nodes/proxy` get | 관리자 화면의 노드 현황 | 남음 |
+
+빠진 19개는 워크로드와 빌드 Job을 만들고 고치는 권한입니다. 남은 16개는 비밀번호나 터미널처럼 Git에 적을 수 없는 작업에 쓰입니다. 이 권한들은 모든 네임스페이스에 걸려 있어서, argocd나 kube-system의 Secret도 이름만 알면 읽을 수 있었습니다.
+
+이 16개는 Argo CD로 옮길 수 없어서 적용 범위를 테넌트 네임스페이스 안으로 좁혔습니다. Secret 읽기는 admission 정책이 검사하지 않는 요청이라, 네임스페이스마다 RoleBinding으로 권한을 걸었습니다. 그러려면 core가 새 네임스페이스에 RoleBinding을 만들 권한이 전역으로 필요한데, 이 권한이면 core가 kube-system에도 자기 RoleBinding을 만들 수 있습니다. RBAC으로는 이를 `app-*` 네임스페이스로 좁힐 수 없어서, ValidatingAdmissionPolicy로 core의 RoleBinding은 앱 네임스페이스 안에서 자기 자신에게만 만들 수 있게 제한했습니다. 이렇게 전역 권한을 8개로 줄였고, 이후 네임스페이스 읽기와 삭제 권한도 빼서 6개가 됐습니다. 테넌트 안에 남은 Pod exec는 테넌트별 게이트웨이로 분리했습니다. 자세한 과정은 [다음 글](/blog/rbac-rolebinding-vap/)에 정리했습니다.
 
 | 시점 | 전역 | 네임스페이스 한정 | core 탈취 시 닿는 범위 |
 | --- | --- | --- | --- |
 | core가 직접 적용 | 35 | 0 | 모든 네임스페이스의 워크로드 쓰기, Secret, Pod exec, kubelet |
 | Argo CD로 이전 | 16 | 0 | 모든 네임스페이스의 Secret, Pod exec, kubelet |
-| 테넌트 RoleBinding + VAP | 6 | 테넌트 10, 빌드 6 | 테넌트 네임스페이스 안의 Secret, Pod exec |
+| 테넌트 RoleBinding + VAP, 네임스페이스 권한 정리 | 6 | 테넌트 10, 빌드 6 | 테넌트 네임스페이스 안의 Secret, Pod exec |
 | exec 게이트웨이 | 6 | 테넌트 8, 빌드 6 | 테넌트 네임스페이스 안의 Secret (Pod exec 없음) |
 
 ## 한계

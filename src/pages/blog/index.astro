@@ -23,7 +23,8 @@ const years = [...new Set(posts.map((p) => p.data.date.getFullYear()))];
       const list = posts.filter((p) => p.data.date.getFullYear() === y);
       return (
         <section class="tree" data-group>
-          <div class="tree-head">
+          {/* 연도 = 트리의 ● (포폴의 프로젝트 노드처럼 채운 원), 글 = ○ */}
+          <div class="tree-head lead">
             <h2 class="tree-title">{y}</h2>
             <span class="tree-sub" data-group-count>{list.length}편</span>
           </div>
