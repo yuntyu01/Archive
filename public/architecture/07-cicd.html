@@ -112,7 +112,7 @@ th{background:var(--bg2);font-weight:700;font-size:12.5px;white-space:nowrap;col
   <text class="al" x="224" y="310">①</text>
 
   <rect class="b hl" x="270" y="300" width="210" height="58" rx="9"/>
-  <text class="t m" x="375" y="325">교환 API</text><text class="s m" x="375" y="343">검사 9개 → CI 토큰 15분</text>
+  <text class="t m" x="375" y="325">교환 API</text><text class="s m" x="375" y="343">검사 11개 → CI 토큰 15분</text>
   <path class="a" d="M375 248V298"/>
   <text class="al" x="383" y="278">② ID 토큰 제출</text>
 
@@ -199,6 +199,8 @@ th{background:var(--bg2);font-weight:700;font-size:12.5px;white-space:nowrap;col
           <tr><td>7</td><td>이벤트가 push 또는 workflow_dispatch</td><td>403</td></tr>
           <tr><td>8</td><td>라이브 슬롯 중 저장소와 브랜치가 모두 같은 것이 있음</td><td>403</td></tr>
           <tr><td>9</td><td><span class="code">sha</span>가 40자 hex</td><td>401</td></tr>
+          <tr><td>10</td><td>앱에 워크플로 파일을 지정했으면 <span class="code">job_workflow_ref</span>가 토큰 저장소의 그 파일 (11/23 추가)</td><td>403 <span class="code">workflow_mismatch</span></td></tr>
+          <tr><td>11</td><td>저장소 ID를 알면 <span class="code">repository_id</span>가 같음. 허용을 켤 때 GitHub에서 받고, 못 받으면 첫 교환의 값을 적어 둠 (11/23 추가)</td><td>403 <span class="code">repo_id_mismatch</span></td></tr>
         </tbody>
       </table>
     </div>
@@ -227,6 +229,7 @@ th{background:var(--bg2);font-weight:700;font-size:12.5px;white-space:nowrap;col
         <tbody>
           <tr><td><b>재배포</b></td><td><span class="code">POST /apps/{app_id}/deploy/redeploy</span><br>헤더 <span class="code">Idempotency-Key</span>(선택), 쿠키 또는 <span class="code">Authorization: Bearer kdci_…</span><br>본문 <span class="code">{"commit_sha": "&lt;40자, 선택&gt;", "repo": "&lt;선택&gt;"}</span>. 그 밖의 칸은 422</td><td><span class="code">202 {"app_id", "requested_sha", "replayed": false, "builds": [{"build_id", "slot", "status", "ref"}]}</span>. 같은 키면 <span class="code">200</span>, <span class="code">replayed: true</span></td></tr>
           <tr><td><b>상태 조회</b></td><td><span class="code">GET /apps/{app_id}/deploy/{build_id}</span>, 쿠키 또는 Bearer</td><td>빌드 상태(<span class="code">queued</span>, <span class="code">building</span>, <span class="code">deploying</span>, <span class="code">running</span>, <span class="code">failed</span>, <span class="code">cancelled</span>), <span class="code">requested_sha</span>, <span class="code">source_sha</span>, CI 빌드면 Actions 실행</td></tr>
+          <tr><td><b>허용과 워크플로 파일</b></td><td><span class="code">PUT /apps/{app_id}/ci-deploy</span>, 쿠키(앱 주인)<br>본문 <span class="code">{"enabled": true, "workflow": ".github/workflows/deploy.yml"}</span>. <span class="code">workflow</span>를 빼면 그대로, 빈 값이면 해제</td><td><span class="code">200 {"ci_deploy_enabled", "ci_workflow"}</span>. 경로 형식이 틀리면 422</td></tr>
           <tr><td><b>CI 토큰 교환</b></td><td><span class="code">POST /apps/{app_id}/ci/token</span>, 인증 없음<br>본문 <span class="code">{"id_token": "&lt;GitHub ID 토큰&gt;"}</span></td><td><span class="code">201 {"token": "kdci_…", "expires_in": 900, "repository", "ref", "sha"}</span></td></tr>
         </tbody>
       </table>

@@ -237,7 +237,7 @@ th{background:var(--bg2);font-weight:700;font-size:12.5px;white-space:nowrap;col
       <table>
         <thead><tr><th>항목</th><th>범위</th></tr></thead>
         <tbody>
-          <tr><td>발급</td><td>GitHub Actions ID 토큰을 <span class="code">POST /apps/{id}/ci/token</span>에서 검사 9개(서명 · iss · aud · 시각 · jti 1회용 · 앱 허용 · 이벤트 · 저장소와 브랜치 · sha)를 거쳐 교환. 앱의 "GitHub Actions 배포 허용"은 기본 꺼짐, 주인만 바꿈</td></tr>
+          <tr><td>발급</td><td>GitHub Actions ID 토큰을 <span class="code">POST /apps/{id}/ci/token</span>에서 검사 11개(서명 · iss · aud · 시각 · jti 1회용 · 앱 허용 · 이벤트 · 저장소와 브랜치 · sha · 지정한 워크플로 파일 · 저장소 ID)를 거쳐 교환. 앱의 "GitHub Actions 배포 허용"은 기본 꺼짐, 주인만 바꿈</td></tr>
           <tr><td>받는 곳</td><td>재배포(<span class="code">POST /apps/{id}/deploy/redeploy</span>)와 상태 조회(<span class="code">GET /apps/{id}/deploy/{build}</span>) 두 곳뿐. 나머지 라우트는 쿠키만 받고, Bearer가 있으면 쿠키는 보지 않는다</td></tr>
           <tr><td>앱 · 커밋</td><td>교환한 앱 하나. 다른 앱 경로는 403, 커밋 · 저장소가 토큰과 다르면 403. 토큰과 저장소 · 브랜치가 같은 슬롯만 그 커밋으로, 나머지 슬롯은 지금 떠 있는 커밋으로 빌드</td></tr>
           <tr><td>수명</td><td>15분. 허용을 끄면 살아 있는 토큰도 바로 만료. 서버에는 sha256만 남는다</td></tr>

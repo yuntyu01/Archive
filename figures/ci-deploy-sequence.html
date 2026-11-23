@@ -43,7 +43,7 @@
 
   <!-- 앞단: push → test -->
   <rect class="band" x="20" y="14" width="1080" height="40" rx="8"/>
-  <text class="bt" x="40" y="41">master에 push → test 잡(mvn test) 통과 → deploy 잡 시작 (needs: test, concurrency로 같은 브랜치는 차례로)</text>
+  <text class="bt" x="40" y="41">master에 push → test 잡(mvn test) 통과 → deploy 잡 시작 (needs: test). 겹치면 서버에서 마지막 요청만 배포</text>
 
   <!-- 참여자 -->
   <rect class="ind" x="30" y="74" width="230" height="78" rx="10"/>
@@ -84,8 +84,8 @@
   <text class="nb" x="160" y="281">②</text>
   <text class="l" x="184" y="281">POST /apps/{id}/ci/token</text>
   <rect class="act" x="628" y="296" width="14" height="40"/>
-  <text class="ld e" x="618" y="316">검사 9개: 서명 · iss · aud · 시각 · jti</text>
-  <text class="ld e" x="618" y="338">앱 · 이벤트 · 저장소/브랜치 · sha</text>
+  <text class="ld e" x="618" y="316">검사 11개: 서명 · iss · aud · 시각 · jti</text>
+  <text class="ld e" x="618" y="338">앱 · 이벤트 · 저장소/브랜치 · sha · 워크플로 · 저장소 ID</text>
   <path class="ad" d="M628 352H147"/>
   <text class="ld" x="200" y="374">CI 토큰 kdci_… (15분, 이 앱 · 이 커밋)</text>
 
