@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<title>DB 복원 단계</title>
+<!-- 렌더: 1120x560, deviceScaleFactor 2 → public/images/posts/tenant-exec-gateway/03.png -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<style>
+  html,body{margin:0;padding:0;background:#f6f6f6}
+  svg{display:block}
+  text{font-family:Pretendard,"Noto Sans CJK KR",sans-serif}
+  .ind{fill:#6d73ce}
+  .gry{fill:#666666}
+  .pur{fill:#c075e7}
+  .red{fill:#e54e4f}
+  .rep{fill:#ffffff;stroke:#666666;stroke-width:2}
+  .t{font-size:21px;font-weight:600;fill:#fff;text-anchor:middle}
+  .s{font-size:15px;font-weight:500;fill:rgba(255,255,255,.9);text-anchor:middle}
+  .tk{font-size:21px;font-weight:600;fill:#000;text-anchor:middle}
+  .sk{font-size:15px;font-weight:500;fill:#666;text-anchor:middle}
+  .box{fill:none;stroke:#666;stroke-width:1.6;stroke-dasharray:3 4}
+  .band{fill:#e4e4e4}
+  .bt{font-size:19px;font-weight:700;fill:#333}
+  .bl{font-size:18px;font-weight:700;fill:#000}
+  .a{fill:none;stroke:#000;stroke-width:2.2;marker-end:url(#ah)}
+  .ar{fill:none;stroke:#e54e4f;stroke-width:2.2;stroke-dasharray:7 6;marker-end:url(#ahr)}
+  .l{font-size:15px;font-weight:600;fill:#000}
+  .ld{font-size:16px;font-weight:500;fill:#555}
+  .lr{font-size:16px;font-weight:700;fill:#e54e4f}
+  .m{text-anchor:middle}
+</style>
+</head><body>
+<svg id="fig" width="1120" height="560" viewBox="0 0 1120 560" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="ah" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M1 1L10.5 6L1 11" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="ahr" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M1 1L10.5 6L1 11" fill="none" stroke="#e54e4f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <rect width="1120" height="560" fill="#f6f6f6"/>
+
+  <rect class="band" x="20" y="14" width="1080" height="40" rx="8"/>
+  <text class="bt" x="40" y="41">단계마다 exec 하나. 종료 상태는 K8s exec의 종료 코드로 받는다</text>
+
+  <!-- 1행: DB를 아직 건드리지 않는 구간 -->
+  <rect class="box" x="20" y="72" width="1080" height="190" rx="6"/>
+  <text class="bl" x="38" y="102">DB를 건드리기 전 (실패하면 db_changed=false, core가 5초 간격으로 2번까지 다시 시도)</text>
+
+  <rect class="pur" x="40" y="124" width="190" height="110" rx="10"/>
+  <text class="t" x="135" y="164">core</text>
+  <text class="s" x="135" y="192">받은 파일의 크기·sha256</text>
+  <text class="s" x="135" y="214">→ 경로에 싣는다</text>
+
+  <path class="a" d="M232 179H262"/>
+
+  <rect class="gry" x="266" y="124" width="190" height="110" rx="10"/>
+  <text class="t" x="361" y="164">precheck</text>
+  <text class="s" x="361" y="192">남은 백업 · 도구</text>
+  <text class="s" x="361" y="214">여유 공간 ≥ 크기×2</text>
+
+  <path class="a" d="M458 179H488"/>
+
+  <rect class="gry" x="492" y="124" width="190" height="110" rx="10"/>
+  <text class="t" x="587" y="164">backup</text>
+  <text class="s" x="587" y="192">DB 덤프, 공간 재확인</text>
+  <text class="s" x="587" y="214">(MySQL만)</text>
+
+  <path class="a" d="M684 179H714"/>
+
+  <rect class="gry" x="718" y="124" width="170" height="110" rx="10"/>
+  <text class="t" x="803" y="164">upload</text>
+  <text class="s" x="803" y="192">Pod 안 파일로</text>
+  <text class="s" x="803" y="214">바이트·해시 계산</text>
+
+  <path class="a" d="M890 179H916"/>
+
+  <rect class="gry" x="920" y="124" width="160" height="110" rx="10"/>
+  <text class="t" x="1000" y="164">verify</text>
+  <text class="s" x="1000" y="192">wc · sha256sum</text>
+  <text class="s" x="1000" y="214">gzip -t</text>
+
+  <!-- 2행: DB를 바꾸는 구간 -->
+  <path class="a" d="M1000 236V330H966"/>
+
+  <rect class="box" x="20" y="280" width="1080" height="150" rx="6"/>
+  <text class="bl" x="38" y="310">DB를 바꾸는 구간</text>
+
+  <rect class="ind" x="772" y="320" width="190" height="96" rx="10"/>
+  <text class="t" x="867" y="360">load</text>
+  <text class="s" x="867" y="384">첫 오류에서 멈춤</text>
+  <text class="s" x="867" y="406">PostgreSQL은 한 트랜잭션</text>
+
+  <path class="a" d="M770 368H740"/>
+
+  <rect class="ind" x="546" y="320" width="190" height="96" rx="10"/>
+  <text class="t" x="641" y="360">check</text>
+  <text class="s" x="641" y="388">종료 코드 · 표 · 행 수</text>
+
+  <path class="a" d="M544 368H514"/>
+
+  <rect class="rep" x="320" y="320" width="190" height="96" rx="10"/>
+  <text class="tk" x="415" y="360">cleanup</text>
+  <text class="sk" x="415" y="388">항상 · 1분 시한</text>
+
+  <!-- 실패 -->
+  <path class="ar" d="M641 418V462"/>
+  <text class="lr" x="654" y="448">실패</text>
+
+  <rect class="red" x="546" y="466" width="190" height="80" rx="10"/>
+  <text class="t" x="641" y="500">rollback</text>
+  <text class="s" x="641" y="526">MySQL 백업으로 되돌림</text>
+
+  <path class="ar" d="M544 506H420V420"/>
+
+  <text class="lr" x="40" y="484">load 중 연결이 끊기거나 rollback이 실패하면</text>
+  <text class="lr" x="40" y="508">백업을 남기고, 다음 복원은 precheck에서 거절</text>
+  <text class="ld" x="40" y="532">(남은 백업과 지금 DB를 비교할 근거를 지키려고)</text>
+</svg>
+</body></html>

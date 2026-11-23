@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="../favicon.png" type="image/png">
+<title>KoDeploy CI/CD</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<style>
+:root{
+  --bg:#ffffff; --bg2:#f4f5f7;
+  --ink:#1f2328; --body:#3f4650; --faint:#828d9a;
+  --line:#e4e7eb;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Consolas,"Liberation Mono",monospace;
+  --sans:Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--body);line-height:1.75;font-size:15px;
+  font-weight:500;font-feature-settings:"tnum";-webkit-font-smoothing:antialiased}
+a{color:var(--ink);text-decoration:none;font-weight:600}
+b,strong{font-weight:700;color:var(--ink)}
+.wrap{max-width:1120px;margin:0 auto;padding:56px 24px 72px}
+@media(max-width:600px){.wrap{padding:36px 16px 56px}}
+.crumb{font-size:13px;color:var(--faint);font-weight:600}
+.crumb a{color:var(--faint)}
+.crumb a:hover{color:var(--ink)}
+h1{margin-top:10px;font-size:clamp(28px,6vw,36px);font-weight:800;letter-spacing:-.02em;line-height:1.25;color:var(--ink)}
+.pitch{margin-top:12px;font-size:15.5px;font-weight:600;color:var(--ink)}
+.arch{margin-top:28px;border:1px solid var(--line);border-radius:10px;background:#fff;padding:20px;overflow-x:auto}
+.arch svg{display:block;width:100%;min-width:820px;height:auto}
+.row{margin-top:36px}
+.row-title{font-size:15.5px;font-weight:800;margin-bottom:12px;color:var(--ink);letter-spacing:-.01em}
+.ov{list-style:disc;padding-left:22px}
+.ov li{font-size:14.5px;margin-bottom:7px}
+.ov li::marker{color:var(--faint)}
+.code{font-family:var(--mono);font-size:.86em;background:var(--bg2);border-radius:4px;padding:1.5px 6px;color:var(--ink)}
+.tblwrap{overflow-x:auto;margin:4px 0 12px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}
+th{background:var(--bg2);font-weight:700;font-size:12.5px;white-space:nowrap;color:var(--ink)}
+.bignums{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:20px;margin-top:26px}
+.bn .v{font-size:clamp(23px,5vw,28px);font-weight:800;letter-spacing:-.02em;color:var(--ink);line-height:1.2}
+.bn .k{font-size:13px;color:var(--faint);margin-top:4px}
+.pager{display:flex;justify-content:space-between;gap:16px;margin-top:52px;padding-top:22px;border-top:1px solid var(--line);font-size:14px}
+.pager a{text-decoration:underline;text-decoration-color:#ccd1d8;text-decoration-thickness:1px;text-underline-offset:4px}
+.pager a:hover{text-decoration-color:var(--ink)}
+@page{size:A4 landscape;margin:12mm}
+@media print{
+  html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .wrap{max-width:none;padding:0}
+  .pager,.crumb{display:none}
+  .arch{break-inside:avoid;overflow:visible}
+  .arch svg{min-width:0}
+}
+
+::selection{background:var(--ink);color:var(--bg)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumb"><a href="index.html">KoDeploy 아키텍처</a> · 07 / 07</nav>
+  <h1>CI/CD</h1>
+  <p class="pitch">웹 · CLI · GitHub Actions 세 곳에서 시작한 배포가 같은 재배포 API로 모이고, 커밋 SHA로 고정돼 빌드된다</p>
+
+  <figure class="arch">
+<svg viewBox="0 0 1200 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="CI/CD 흐름: 웹 콘솔은 쿠키 세션으로, GitHub Actions는 deploy-action이 받은 CLI가 OIDC ID 토큰을 CI 토큰으로 바꿔 Core 재배포 API를 부른다. Core는 라이브 설정과 커밋 SHA로 Builder에 빌드를 맡기고, CLI는 상태를 조회해 exit code로 끝낸다">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#3f4650"/></marker>
+    <marker id="ahd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#9aa3ae"/></marker>
+  </defs>
+  <style>
+    text{font-family:Pretendard,-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+    .z{fill:none;stroke:#cdd2d9;stroke-width:1.4}
+    .zk{fill:none;stroke:#5b84d6;stroke-width:1.6}
+    .zl{font-size:15px;font-weight:700;fill:#1f2328}
+    .zlk{font-size:15px;font-weight:700;fill:#4a74c9}
+    .b{fill:#fff;stroke:#d7dbe1;stroke-width:1.2}
+    .hl{fill:#f4f5f7}
+    .f{fill:#f4f5f7}
+    .t{font-size:13px;font-weight:700;fill:#1f2328}
+    .t2{font-size:12px;font-weight:700;fill:#1f2328}
+    .s{font-size:11px;font-weight:500;fill:#828d9a}
+    .sb{font-size:12px;font-weight:800;fill:#9aa3ae;letter-spacing:.04em}
+    .m{text-anchor:middle}
+    .e{text-anchor:end}
+    .a{fill:none;stroke:#3f4650;stroke-width:1.4;marker-end:url(#ah)}
+    .ad{fill:none;stroke:#9aa3ae;stroke-width:1.3;stroke-dasharray:5 4;marker-end:url(#ahd)}
+    .al{font-size:11px;font-weight:600;fill:#3f4650;paint-order:stroke;stroke:#fff;stroke-width:4px;stroke-linejoin:round}
+    .ald{font-size:11px;font-weight:600;fill:#828d9a;paint-order:stroke;stroke:#fff;stroke-width:4px;stroke-linejoin:round}
+  </style>
+
+  <!-- 진입점 -->
+  <text class="sb" x="20" y="30">진입점</text>
+  <rect class="b" x="20" y="44" width="200" height="58" rx="9"/>
+  <text class="t m" x="120" y="69">웹 콘솔</text><text class="s m" x="120" y="87">배포하기 · 설정 변경</text>
+  <rect class="b" x="20" y="190" width="200" height="58" rx="9"/>
+  <text class="t m" x="120" y="215">GitHub Actions</text><text class="s m" x="120" y="233">push · workflow_dispatch</text>
+  <rect class="b hl" x="20" y="300" width="200" height="58" rx="9"/>
+  <text class="t m" x="120" y="325">CLI (Go)</text><text class="s m" x="120" y="343">kodeploy deploy</text>
+  <path class="a" d="M120 248V298"/>
+  <text class="al" x="128" y="278">액션이 받아 실행</text>
+  <text class="ald" x="20" y="384">체크섬은 액션 저장소에 고정</text>
+
+  <!-- 인증 -->
+  <text class="sb" x="270" y="30">인증</text>
+  <rect class="b" x="270" y="44" width="210" height="58" rx="9"/>
+  <text class="t m" x="375" y="69">쿠키 세션</text><text class="s m" x="375" y="87">편집 권한 이상</text>
+  <path class="a" d="M220 73H268"/>
+
+  <rect class="b" x="270" y="190" width="210" height="58" rx="9"/>
+  <text class="t m" x="375" y="215">GitHub OIDC</text><text class="s m" x="375" y="233">ID 토큰 (aud=kodeploy)</text>
+  <path class="a" d="M220 318H246V219H268"/>
+  <text class="al" x="224" y="310">①</text>
+
+  <rect class="b hl" x="270" y="300" width="210" height="58" rx="9"/>
+  <text class="t m" x="375" y="325">교환 API</text><text class="s m" x="375" y="343">검사 9개 → CI 토큰 15분</text>
+  <path class="a" d="M375 248V298"/>
+  <text class="al" x="383" y="278">② ID 토큰 제출</text>
+
+  <!-- Core -->
+  <rect class="zk" x="520" y="20" width="330" height="420" rx="14"/>
+  <text class="zlk" x="536" y="44">Core API</text>
+
+  <rect class="b" x="540" y="62" width="290" height="58" rx="9"/>
+  <text class="t m" x="685" y="87">배포 폼 POST /deploy</text><text class="s m" x="685" y="105">설정 변경 · 첫 배포</text>
+  <path class="a" d="M480 66H538"/>
+  <text class="al m" x="509" y="60">설정 변경</text>
+
+  <rect class="b hl" x="540" y="150" width="290" height="160" rx="9"/>
+  <text class="t m" x="685" y="174">재배포 API</text>
+  <text class="s m" x="685" y="192">POST /apps/{id}/deploy/redeploy</text>
+  <rect class="f" x="556" y="204" width="258" height="26" rx="6"/><text class="t2" x="566" y="221">라이브 설정 <tspan class="s" dx="4">슬롯마다 지금 떠 있는 행</tspan></text>
+  <rect class="f" x="556" y="236" width="258" height="26" rx="6"/><text class="t2" x="566" y="253">멱등 키 <tspan class="s" dx="4">같은 키 = 같은 빌드 (200)</tspan></text>
+  <rect class="f" x="556" y="268" width="258" height="26" rx="6"/><text class="t2" x="566" y="285">커밋 고정 <tspan class="s" dx="4">requested_sha</tspan></text>
+  <path class="a" d="M480 88H500V170H538"/>
+  <text class="al" x="486" y="140">배포하기</text>
+  <path class="a" d="M480 329H500V260H538"/>
+  <text class="al" x="486" y="298">③ Bearer</text>
+
+  <rect class="b" x="540" y="340" width="290" height="80" rx="9"/>
+  <text class="t m" x="685" y="364">상태 조회</text>
+  <text class="s m" x="685" y="382">GET /apps/{id}/deploy/{build}</text>
+  <text class="s m" x="685" y="400">CI 토큰은 이 두 곳에서만 받는다</text>
+  <path class="ad" d="M538 390H170V360"/>
+  <text class="ald" x="300" y="384">⑤ 2초 → 10초 간격 조회</text>
+
+  <!-- Builder · Argo -->
+  <text class="sb" x="890" y="30">빌드 · 배포</text>
+  <rect class="b" x="890" y="62" width="290" height="96" rx="9"/>
+  <text class="t m" x="1035" y="87">Builder</text>
+  <text class="s m" x="1035" y="106">ref가 40자 SHA면 그 커밋만 fetch</text>
+  <text class="s m" x="1035" y="124">init 로그의 KODEPLOY_SOURCE_SHA 한 줄로</text>
+  <text class="s m" x="1035" y="142">실제 빌드한 커밋(source_sha) 보고</text>
+  <path class="a" d="M830 230H860V110H888"/>
+  <text class="al" x="836" y="200">④ ref</text>
+
+  <rect class="b" x="890" y="200" width="290" height="58" rx="9"/>
+  <text class="t m" x="1035" y="225">kodeploy-apps → Argo CD</text><text class="s m" x="1035" y="243">이미지 tag@sha256 커밋 → sync</text>
+  <path class="a" d="M1035 158V198"/>
+
+  <rect class="b" x="890" y="300" width="290" height="58" rx="9"/>
+  <text class="t m" x="1035" y="325">테넌트 ns</text><text class="s m" x="1035" y="343">running 뒤 60초 더 감시 (postwatch)</text>
+  <path class="a" d="M1035 258V298"/>
+  <path class="ad" d="M888 329H832"/>
+  <text class="ald m" x="860" y="320">상태</text>
+
+  <!-- exit code -->
+  <rect class="z" x="20" y="460" width="1160" height="80" rx="12"/>
+  <text class="zl" x="36" y="486">판정과 exit code</text>
+  <text class="t2" x="36" y="514">failed 하나라도 → 1 · 실패 없이 cancelled → 3 (밀림) · 모두 running + 60초 → 0 · 400/422/되풀이 409 → 2 · 시간 초과 → 4 · 인증 · 권한 · 연결 → 125 · 중단 → 130</text>
+  <text class="s" x="36" y="530">GitHub Actions 안이면 실패에 ::error 한 줄과 잡 요약 표를 남기고, 액션은 3을 기본으로 notice와 성공으로 바꾼다</text>
+</svg>
+  </figure>
+
+  <div class="row">
+    <p class="row-title">진입점 셋</p>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>진입점</th><th>인증</th><th>빌드하는 커밋</th><th>쓰는 API</th></tr></thead>
+        <tbody>
+          <tr><td><b>웹 "설정 변경"</b></td><td>쿠키 세션</td><td>브랜치 최신</td><td>배포 폼 <span class="code">POST /deploy</span> (설정을 정함, 첫 배포)</td></tr>
+          <tr><td><b>웹 "배포하기"</b></td><td>쿠키 세션 (편집 권한 이상)</td><td>최근 커밋 3개 중 고른 것, 기본은 최신. 다른 저장소의 슬롯은 그 브랜치 최신</td><td>재배포 API</td></tr>
+          <tr><td><b>GitHub Actions</b> (deploy-action → CLI)</td><td>OIDC ID 토큰 → CI 토큰</td><td>워크플로의 커밋. 다른 슬롯은 지금 떠 있는 커밋, 기록이 없으면 <span class="code">409 slot_commit_unknown</span></td><td>재배포 API · 상태 조회</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="row">
+    <p class="row-title">OIDC 교환: 저장소에 비밀을 두지 않는다</p>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>#</th><th>검사</th><th>실패</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>서명: GitHub JWKS, RS256만. 키는 5분 캐시, 모르는 kid면 30초에 한 번까지 다시 받음</td><td>401</td></tr>
+          <tr><td>2 · 3</td><td><span class="code">iss</span> = GitHub Actions, <span class="code">aud</span> = kodeploy</td><td>401</td></tr>
+          <tr><td>4</td><td><span class="code">exp</span> · <span class="code">iat</span> · <span class="code">nbf</span> (60초 허용)</td><td>401</td></tr>
+          <tr><td>5</td><td><span class="code">jti</span> 1회용 (CI 토큰 표의 UNIQUE)</td><td>401</td></tr>
+          <tr><td>6</td><td>앱이 있고 "GitHub Actions 배포 허용"이 켜짐</td><td>404 · 403</td></tr>
+          <tr><td>7</td><td>이벤트가 push 또는 workflow_dispatch</td><td>403</td></tr>
+          <tr><td>8</td><td>라이브 슬롯 중 저장소와 브랜치가 모두 같은 것이 있음</td><td>403</td></tr>
+          <tr><td>9</td><td><span class="code">sha</span>가 40자 hex</td><td>401</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="row">
+    <p class="row-title">멱등 키</p>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>경우</th><th>동작</th></tr></thead>
+        <tbody>
+          <tr><td>같은 키</td><td>재시도로 본다. 그때 만든 빌드를 지금 상태로 <span class="code">200 replayed</span>. 실패한 빌드여도 다시 빌드하지 않는다</td></tr>
+          <tr><td>다른 키</td><td>새 의도로 본다. 같은 슬롯의 진행 중 빌드는 취소되고 마지막 요청이 이긴다</td></tr>
+          <tr><td>첫 요청이 처리 중</td><td>약 5초 기다렸다 다시 읽고, 그래도 안 끝났으면 <span class="code">409</span> (CLI가 다시 보냄)</td></tr>
+          <tr><td>GitHub Actions</td><td><span class="code">gha-&lt;RUN_ID&gt;-&lt;RUN_ATTEMPT&gt;</span>. 실행 안의 재시도는 같은 빌드, Re-run은 새 배포</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="row">
+    <p class="row-title">API 형식</p>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>API</th><th>요청</th><th>응답</th></tr></thead>
+        <tbody>
+          <tr><td><b>재배포</b></td><td><span class="code">POST /apps/{app_id}/deploy/redeploy</span><br>헤더 <span class="code">Idempotency-Key</span>(선택), 쿠키 또는 <span class="code">Authorization: Bearer kdci_…</span><br>본문 <span class="code">{"commit_sha": "&lt;40자, 선택&gt;", "repo": "&lt;선택&gt;"}</span>. 그 밖의 칸은 422</td><td><span class="code">202 {"app_id", "requested_sha", "replayed": false, "builds": [{"build_id", "slot", "status", "ref"}]}</span>. 같은 키면 <span class="code">200</span>, <span class="code">replayed: true</span></td></tr>
+          <tr><td><b>상태 조회</b></td><td><span class="code">GET /apps/{app_id}/deploy/{build_id}</span>, 쿠키 또는 Bearer</td><td>빌드 상태(<span class="code">queued</span>, <span class="code">building</span>, <span class="code">deploying</span>, <span class="code">running</span>, <span class="code">failed</span>, <span class="code">cancelled</span>), <span class="code">requested_sha</span>, <span class="code">source_sha</span>, CI 빌드면 Actions 실행</td></tr>
+          <tr><td><b>CI 토큰 교환</b></td><td><span class="code">POST /apps/{app_id}/ci/token</span>, 인증 없음<br>본문 <span class="code">{"id_token": "&lt;GitHub ID 토큰&gt;"}</span></td><td><span class="code">201 {"token": "kdci_…", "expires_in": 900, "repository", "ref", "sha"}</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>상태</th><th><span class="code">code</span></th><th>뜻</th></tr></thead>
+        <tbody>
+          <tr><td>400</td><td><span class="code">invalid_commit_sha</span>, <span class="code">invalid_idempotency_key</span>, <span class="code">repo_not_used</span>, <span class="code">app_id_required</span></td><td>요청 형식이 틀림</td></tr>
+          <tr><td>401</td><td><span class="code">ci_token_invalid</span>, <span class="code">ci_token_expired</span>, <span class="code">ci_deploy_disabled</span></td><td>CI 토큰 문제. CLI는 401이면 새 ID 토큰으로 다시 교환한다(실행당 최대 5번)</td></tr>
+          <tr><td>403</td><td><span class="code">commit_mismatch</span>, <span class="code">repo_mismatch</span>, <span class="code">branch_mismatch</span>, <span class="code">ci_token_app_mismatch</span></td><td>CI 토큰의 범위 밖</td></tr>
+          <tr><td>409</td><td><span class="code">no_live_deploy</span>, <span class="code">no_successful_slot</span>, <span class="code">slot_commit_unknown</span></td><td>다시 보내도 같다. 웹에서 배포해야 풀린다</td></tr>
+          <tr><td>409</td><td><span class="code">key_in_progress</span>, <span class="code">key_released</span></td><td>같은 키로 다시 보내면 된다</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="row">
+    <p class="row-title">CLI exit code</p>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>exit</th><th>뜻</th><th>액션의 잡 결과</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>성공. 모두 <span class="code">running</span>이 되고 settle(기본 60초) 동안 그대로</td><td>성공</td></tr>
+          <tr><td>1</td><td>배포 실패. 빌드 하나라도 <span class="code">failed</span></td><td>실패</td></tr>
+          <tr><td>2</td><td>사용법 오류, 다시 보내도 같은 <span class="code">400</span>, <span class="code">409</span>, <span class="code">422</span></td><td>실패</td></tr>
+          <tr><td>3</td><td>다른 배포에 밀림. 실패 없이 <span class="code">cancelled</span></td><td>기본은 notice만 남기고 성공(<span class="code">fail-on-superseded: true</span>면 실패)</td></tr>
+          <tr><td>4</td><td>CLI 시간 제한(기본 25분) 초과. 빌드는 서버에서 계속 진행</td><td>실패</td></tr>
+          <tr><td>125</td><td>인증, 권한, 연결 오류</td><td>실패</td></tr>
+          <tr><td>130</td><td>사용자가 중단(SIGINT, SIGTERM)</td><td>실패</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:14px">상태 조회는 2초에서 시작해 바뀌지 않으면 두 배씩 10초까지 늘리고, 어느 빌드든 바뀌면 2초로 돌아간다. <span class="code">--output json</span>은 결과 하나를 stdout에 쓰고, <span class="code">GITHUB_ACTIONS=true</span>면 실패할 때 <span class="code">::error</span> 한 줄과 잡 요약 표를 남긴다.</p>
+  </div>
+
+  <div class="row">
+    <p class="row-title">액션 입력과 출력 (kodeploy/deploy-action)</p>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>입력</th><th>기본값</th><th>뜻</th></tr></thead>
+        <tbody>
+          <tr><td><span class="code">app</span></td><td>(필수)</td><td>KoDeploy 앱 id. 비밀이 아니라 repository variable에 둔다</td></tr>
+          <tr><td><span class="code">server</span></td><td><span class="code">https://api.kodeploy.com</span></td><td>API 주소</td></tr>
+          <tr><td><span class="code">audience</span></td><td><span class="code">kodeploy</span></td><td>ID 토큰의 <span class="code">aud</span></td></tr>
+          <tr><td><span class="code">cli-version</span></td><td><span class="code">0.1.0</span></td><td>CLI 버전. 기본 버전만 액션 저장소에 sha256이 고정돼 있다</td></tr>
+          <tr><td><span class="code">timeout</span>, <span class="code">settle</span></td><td><span class="code">25m</span>, <span class="code">60s</span></td><td>CLI의 <span class="code">--timeout</span>, <span class="code">--settle</span></td></tr>
+          <tr><td><span class="code">wait</span></td><td><span class="code">true</span></td><td><span class="code">false</span>면 요청만 하고 끝낸다</td></tr>
+          <tr><td><span class="code">fail-on-superseded</span></td><td><span class="code">false</span></td><td>exit 3을 실패로 볼지</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>출력</th><th>뜻</th></tr></thead>
+        <tbody>
+          <tr><td><span class="code">result</span></td><td><span class="code">success</span>, <span class="code">failed</span>, <span class="code">superseded</span>, <span class="code">timeout</span>, <span class="code">interrupted</span>, <span class="code">requested</span>, <span class="code">error</span> 중 하나</td></tr>
+          <tr><td><span class="code">exit-code</span></td><td>CLI의 exit code (밀려서 성공으로 끝나도 3)</td></tr>
+          <tr><td><span class="code">build-ids</span></td><td>이번 요청이 만든 빌드 id, 쉼표로 구분</td></tr>
+          <tr><td><span class="code">source-sha</span></td><td>워크플로 커밋으로 빌드된 빌드의 <span class="code">source_sha</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:14px">스크립트는 셋이다. <span class="code">install.sh</span>는 id-token 권한, 러너 OS와 아키텍처를 확인하고 CLI를 받아 고정 체크섬과 비교한다. <span class="code">deploy.sh</span>는 CLI를 돌리고 출력을 채운다. <span class="code">lib.sh</span>는 둘이 같이 쓰는 함수다. 입력은 env로만 넘긴다.</p>
+  </div>
+
+  <div class="row">
+    <p class="row-title">설계 포인트</p>
+    <ul class="ov">
+      <li><b>설정은 웹 폼만 바꾼다</b> - 재배포 API는 설정을 요청으로 받지 않고 슬롯마다 지금 떠 있는 배포 행에서 다시 만든다. CI는 커밋만 바꿀 수 있다.</li>
+      <li><b>입력과 출력의 지문</b> - 요청 시점에는 이미지가 없어서 커밋 SHA로 고정하고, 결과는 이미지 digest로 Argo CD에 넘긴다. 워크플로는 액션을 커밋 SHA로, 액션은 CLI 바이트를 커밋해 둔 sha256으로 고정한다.</li>
+      <li><b>겹치는 배포</b> - 서버는 같은 슬롯의 진행 중 빌드를 취소하고 마지막 요청을 살린다. 밀린 쪽 CLI는 exit 3이고 액션은 notice만 남긴다. 2026-11-23 실측(세 안 2회씩)에서 deploy 잡을 차례로 세우던 <span class="code">concurrency</span>를 빼자 두 번째 push가 운영에 나가기까지가 평균 466초에서 257초로 줄어, 데모 워크플로에서 뺐다.</li>
+      <li><b>짧은 토큰과 재교환</b> - CI 토큰은 15분이고, 서버 쪽 최대 대기는 약 23분이다. CLI가 대기 중 401을 받으면 새 ID 토큰으로 다시 교환한다(실행당 최대 5번). 운영 기록의 배포 43회에서 가장 긴 대기는 8분 11초였다.</li>
+      <li><b>안정화</b> - 서버는 서버 빌드가 running이 된 뒤 60초 동안 앱 Pod를 더 보고 재시작 · OOM이면 같은 빌드를 failed로 바꾼다. 그래서 CLI도 모두 running이 된 뒤 60초를 더 기다린 다음 성공으로 끝낸다.</li>
+      <li><b>확인</b> - 2026-11-21~23 시험 앱(서버 저장소 A, 정적 저장소 B)에서 push 성공, 테스트 실패 시 배포 건너뜀, 연속 push 대기, Re-run 새 빌드, 웹 배포와 겹친 밀림, 액션 SHA 고정을 GitHub Actions 실행으로 확인했다. B에 배포하지 않은 커밋을 올려 두고 A에 push해도 정적 슬롯은 라이브 커밋으로 빌드됐다.</li>
+    </ul>
+  </div>
+
+  <nav class="pager"><a href="06-observability.html">← 관측 · 백업</a><a href="index.html">목차 →</a></nav>
+</div>
+</body></html>

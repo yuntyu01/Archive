@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<title>concurrency 세 안</title>
+<!-- 렌더: 1120x522, deviceScaleFactor 2 → public/images/posts/commit-pinned-ci-deploy/05.png -->
+<!-- 원자료: 2026-11-23 데모 저장소 실측 6회 (A push, 약 42초 뒤 B push) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<style>
+  html,body{margin:0;padding:0;background:#f6f6f6}
+  svg{display:block}
+  text{font-family:Pretendard,"Noto Sans CJK KR",sans-serif}
+  .band{fill:#e4e4e4}
+  .bt{font-size:20px;font-weight:700;fill:#333}
+  .hd{font-size:16px;font-weight:700;fill:#555}
+  .vn{font-size:19px;font-weight:700;fill:#000}
+  .rn{font-size:17px;font-weight:600;fill:#555}
+  .bg{fill:#999999}
+  .bq{fill:#6d73ce}
+  .bv{font-size:17px;font-weight:700;fill:#000}
+  .n{font-size:16px;font-weight:600;fill:#000}
+  .nd{font-size:15px;font-weight:500;fill:#666}
+  .ax{font-size:15px;font-weight:500;fill:#555}
+  .axl{fill:none;stroke:#999;stroke-width:1.6}
+  .tk{stroke:#999;stroke-width:1.6}
+  .th{stroke:#e54e4f;stroke-width:2;stroke-dasharray:6 5}
+  .tl{font-size:15px;font-weight:700;fill:#e54e4f}
+  .m{text-anchor:middle}
+</style>
+</head><body>
+<svg id="fig" width="1120" height="522" viewBox="0 0 1120 522" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1120" height="522" fill="#f6f6f6"/>
+  <rect class="band" x="20" y="14" width="1080" height="40" rx="8"/>
+  <text class="bt" x="40" y="41">커밋 A push, 약 42초 뒤 커밋 B push. B push부터 B의 빌드가 모두 running이 될 때까지</text>
+  <text class="hd" x="250" y="96">B push부터 B running까지</text>
+  <text class="hd" x="850" y="96">빌드 4개 중 취소, 잡 결과</text>
+  <path class="th" d="M582.6 104V456"/>
+  <text class="tl" x="588.6" y="450">(a) 평균의 70% (326초)</text>
+  <text class="vn" x="40" y="156">(a) 차례로</text>
+  <text class="rn" x="236" y="144" text-anchor="end">1회</text>
+  <rect class="bg" x="250" y="124" width="467.7" height="28" rx="5"/>
+  <text class="bv" x="727.7" y="144">458.5초</text>
+  <text class="n" x="850" y="137">취소 0</text>
+  <text class="nd" x="850" y="157">A가 4분 5초 운영에 나감</text>
+  <text class="rn" x="236" y="192" text-anchor="end">2회</text>
+  <rect class="bg" x="250" y="172" width="482.7" height="28" rx="5"/>
+  <text class="bv" x="742.7" y="192">473.2초</text>
+  <text class="n" x="850" y="185">취소 0</text>
+  <text class="nd" x="850" y="205">A가 4분 26초 운영에 나감</text>
+  <text class="vn" x="40" y="274">(b) 앞 잡 취소</text>
+  <text class="rn" x="236" y="262" text-anchor="end">1회</text>
+  <rect class="bg" x="250" y="242" width="283.6" height="28" rx="5"/>
+  <text class="bv" x="543.6" y="262">278.0초</text>
+  <text class="n" x="850" y="255">취소 1 (72초), A 잡 회색</text>
+  <text class="nd" x="850" y="275">A 안 나감</text>
+  <text class="rn" x="236" y="310" text-anchor="end">2회</text>
+  <rect class="bg" x="250" y="290" width="269.7" height="28" rx="5"/>
+  <text class="bv" x="529.7" y="310">264.4초</text>
+  <text class="n" x="850" y="303">취소 1 (67초), A 잡 회색</text>
+  <text class="nd" x="850" y="323">A 안 나감</text>
+  <text class="vn" x="40" y="392">(c) 줄 없음</text>
+  <text class="rn" x="236" y="380" text-anchor="end">1회</text>
+  <rect class="bq" x="250" y="360" width="272.3" height="28" rx="5"/>
+  <text class="bv" x="532.3" y="380">267.0초</text>
+  <text class="n" x="850" y="373">취소 2 (108초), 모두 초록</text>
+  <text class="nd" x="850" y="393">A 안 나감</text>
+  <text class="rn" x="236" y="428" text-anchor="end">2회</text>
+  <rect class="bq" x="250" y="408" width="252.1" height="28" rx="5"/>
+  <text class="bv" x="512.1" y="428">247.2초</text>
+  <text class="n" x="850" y="421">취소 2 (51초), 모두 초록</text>
+  <text class="nd" x="850" y="441">A 안 나감</text>
+  <path class="axl" d="M250 458H760"/>
+  <path class="tk" d="M250.0 458V466"/><text class="ax m" x="250.0" y="486">0초</text>
+  <path class="tk" d="M352.0 458V466"/><text class="ax m" x="352.0" y="486">100초</text>
+  <path class="tk" d="M454.0 458V466"/><text class="ax m" x="454.0" y="486">200초</text>
+  <path class="tk" d="M556.0 458V466"/><text class="ax m" x="556.0" y="486">300초</text>
+  <path class="tk" d="M658.0 458V466"/><text class="ax m" x="658.0" y="486">400초</text>
+  <path class="tk" d="M760.0 458V466"/><text class="ax m" x="760.0" y="486">500초</text>
+</svg>
+</body></html>

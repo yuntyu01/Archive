@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<title>배포를 잇는 지문</title>
+<!-- 렌더: 1120x470, deviceScaleFactor 2 → public/images/posts/commit-pinned-ci-deploy/03.png -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<style>
+  html,body{margin:0;padding:0;background:#f6f6f6}
+  svg{display:block}
+  text{font-family:Pretendard,"Noto Sans CJK KR",sans-serif}
+  .ind{fill:#6d73ce}
+  .gry{fill:#666666}
+  .pur{fill:#c075e7}
+  .t{font-size:24px;font-weight:600;fill:#fff;text-anchor:middle}
+  .s{font-size:16px;font-weight:500;fill:rgba(255,255,255,.9);text-anchor:middle}
+  .band{fill:#e4e4e4}
+  .bt{font-size:20px;font-weight:700;fill:#333}
+  .box{fill:none;stroke:#666;stroke-width:1.6;stroke-dasharray:3 4}
+  .bl{font-size:19px;font-weight:700;fill:#000}
+  .a{fill:none;stroke:#000;stroke-width:2.4;marker-end:url(#ah)}
+  .l{font-size:16px;font-weight:600;fill:#000;text-anchor:middle}
+  .n{font-size:17px;font-weight:500;fill:#333;text-anchor:middle}
+  .nb{font-size:17px;font-weight:700;fill:#000}
+  .ld{font-size:17px;font-weight:500;fill:#555}
+</style>
+</head><body>
+<svg id="fig" width="1120" height="470" viewBox="0 0 1120 470" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="ah" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M1 1L10.5 6L1 11" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <rect width="1120" height="470" fill="#f6f6f6"/>
+
+  <rect class="band" x="20" y="14" width="1080" height="40" rx="8"/>
+  <text class="bt" x="40" y="41">이름(브랜치, 태그 v1)은 움직인다. 지문은 내용이 바뀌면 값이 바뀐다</text>
+
+  <!-- 워크플로가 고정 / 플랫폼이 고정 -->
+  <rect class="box" x="20" y="74" width="540" height="250" rx="6"/>
+  <text class="bl" x="38" y="104">워크플로가 고정</text>
+  <rect class="box" x="580" y="74" width="520" height="250" rx="6"/>
+  <text class="bl" x="598" y="104">플랫폼이 고정</text>
+
+  <rect class="gry" x="40" y="130" width="230" height="140" rx="10"/>
+  <text class="t" x="155" y="172">액션 커밋 SHA</text>
+  <text class="s" x="155" y="204">uses: …@678ee39…</text>
+  <text class="s" x="155" y="228"># v1.0.0</text>
+
+  <path class="a" d="M272 200H306"/>
+
+  <rect class="gry" x="310" y="130" width="230" height="140" rx="10"/>
+  <text class="t" x="425" y="172">CLI 체크섬</text>
+  <text class="s" x="425" y="204">checksums/0.1.0.txt</text>
+  <text class="s" x="425" y="228">tar.gz sha256</text>
+
+  <path class="a" d="M542 200H596"/>
+
+  <rect class="ind" x="600" y="130" width="230" height="140" rx="10"/>
+  <text class="t" x="715" y="172">소스 커밋 SHA</text>
+  <text class="s" x="715" y="204">토큰의 sha = requested_sha</text>
+  <text class="s" x="715" y="228">빌더가 source_sha 확인</text>
+
+  <path class="a" d="M832 200H866"/>
+
+  <rect class="pur" x="870" y="130" width="210" height="140" rx="10"/>
+  <text class="t" x="975" y="172">이미지 digest</text>
+  <text class="s" x="975" y="204">kodeploy-apps values</text>
+  <text class="s" x="975" y="228">tag@sha256:…</text>
+
+  <text class="n" x="155" y="300">워크플로 작성자</text>
+  <text class="n" x="425" y="300">액션 저장소의 커밋</text>
+  <text class="n" x="715" y="300">core · builder</text>
+  <text class="n" x="975" y="300">builder → Argo CD</text>
+
+  <!-- 설명 -->
+  <text class="nb" x="40" y="370">무엇을 막나</text>
+  <text class="ld" x="40" y="402">앞의 둘: 태그를 옮기거나 릴리스 파일을 바꿔도 이 워크플로가 실행하는 코드는 그대로</text>
+  <text class="ld" x="40" y="432">뒤의 둘: 입력의 지문(커밋)과 출력의 지문(digest). 빌드 전에는 이미지가 없어서 커밋으로 고정한다</text>
+</svg>
+</body></html>

@@ -190,35 +190,40 @@ svg{display:block;width:1320px;height:auto}
   <rect class="f" x="890" y="788" width="58" height="28" rx="7"/><text class="t2 m" x="919" y="806">Grafana</text>
 
   <!-- ── GitHub ── -->
-  <rect class="z" x="1012" y="80" width="292" height="320" rx="16"/>
+  <rect class="z" x="1012" y="80" width="292" height="376" rx="16"/>
   <text class="zl" x="1030" y="106">GitHub</text>
   <rect class="b" x="1030" y="120" width="256" height="44" rx="9"/>
   <text class="t m" x="1158" y="138">사용자 저장소</text><text class="s m" x="1158" y="155">앱 소스 · 공개 / 비공개</text>
   <rect class="b" x="1030" y="176" width="256" height="44" rx="9"/>
   <text class="t m" x="1158" y="194">GHCR</text><text class="s m" x="1158" y="211">앱 이미지 · 빌드 캐시</text>
+  <!-- GitHub Actions: deploy-action이 받은 CLI가 OIDC ID 토큰을 CI 토큰으로 바꿔 재배포한다. 사용자와 같은 길(api.kodeploy.com)로 들어온다 -->
+  <rect class="b" x="1030" y="232" width="256" height="44" rx="9"/>
+  <text class="t m" x="1158" y="250">GitHub Actions</text><text class="s m" x="1158" y="267">deploy-action → CLI · OIDC 교환</text>
+  <path class="a" d="M1286 254H1312V24H195V129"/>
+  <text class="al m" x="700" y="15">GitHub Actions → api.kodeploy.com (ID 토큰 교환 · 커밋 고정 재배포 · 상태 조회)</text>
 
-  <rect class="f" x="1026" y="236" width="264" height="150" rx="12"/>
-  <text class="sb" x="1040" y="257">GITOPS 저장소</text>
-  <rect class="b" x="1040" y="268" width="236" height="44" rx="9"/>
-  <text class="t m" x="1158" y="286">kodeploy-apps</text><text class="s m" x="1158" y="303">앱별 values.yaml (원하는 상태)</text>
+  <rect class="f" x="1026" y="292" width="264" height="150" rx="12"/>
+  <text class="sb" x="1040" y="313">GITOPS 저장소</text>
   <rect class="b" x="1040" y="324" width="236" height="44" rx="9"/>
-  <text class="t m" x="1158" y="342">kodeploy-charts</text><text class="s m" x="1158" y="359">공통 Helm 차트 · AppProject</text>
+  <text class="t m" x="1158" y="342">kodeploy-apps</text><text class="s m" x="1158" y="359">앱별 values.yaml (원하는 상태)</text>
+  <rect class="b" x="1040" y="380" width="236" height="44" rx="9"/>
+  <text class="t m" x="1158" y="398">kodeploy-charts</text><text class="s m" x="1158" y="415">공통 Helm 차트 · AppProject</text>
 
   <path class="a" d="M1028 142H962"/>
   <text class="al m" x="995" y="135">clone</text>
   <path class="a" d="M960 172H996V198H1028"/>
   <text class="al e" x="990" y="193">push</text>
-  <path class="a" d="M960 290H1038"/>
-  <text class="al m" x="999" y="283">values 커밋</text>
-  <path class="a" d="M1026 380H962"/>
-  <text class="al m" x="994" y="373">pull</text>
+  <path class="a" d="M960 290H1020V346H1038"/>
+  <text class="al m" x="990" y="283">values 커밋</text>
+  <path class="a" d="M1026 402H962"/>
+  <text class="al m" x="994" y="395">pull</text>
 
   <!-- ── 범례 ── -->
-  <text class="sb" x="1030" y="452">범례</text>
-  <path class="a" d="M1030 476H1072"/><text class="s" x="1084" y="480" style="fill:#3f4650">요청 · 데이터 흐름</text>
-  <path class="ag" d="M1030 504H1072"/><text class="s" x="1084" y="508" style="fill:#3f4650">Argo CD가 git 상태로 적용</text>
-  <path class="ad" d="M1030 532H1072"/><text class="s" x="1084" y="536" style="fill:#3f4650">core 직접 접근 (테넌트 ns만)</text>
-  <path class="an" d="M1030 560H1072"/><path class="x" d="M1045 553l12 12M1057 553l-12 12"/>
-  <text class="s" x="1084" y="564" style="fill:#3f4650">v1 core 직접 patch/replace (제거)</text>
+  <text class="sb" x="1030" y="508">범례</text>
+  <path class="a" d="M1030 532H1072"/><text class="s" x="1084" y="536" style="fill:#3f4650">요청 · 데이터 흐름</text>
+  <path class="ag" d="M1030 560H1072"/><text class="s" x="1084" y="564" style="fill:#3f4650">Argo CD가 git 상태로 적용</text>
+  <path class="ad" d="M1030 588H1072"/><text class="s" x="1084" y="592" style="fill:#3f4650">core 직접 접근 (테넌트 ns만)</text>
+  <path class="an" d="M1030 616H1072"/><path class="x" d="M1045 609l12 12M1057 609l-12 12"/>
+  <text class="s" x="1084" y="620" style="fill:#3f4650">v1 core 직접 patch/replace (제거)</text>
 </svg>
 </body></html>

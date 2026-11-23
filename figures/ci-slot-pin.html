@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<title>CI 재배포의 칸 고정 전과 후</title>
+<!-- 렌더: 1120x620, deviceScaleFactor 2 → public/images/posts/commit-pinned-ci-deploy/02.png -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<style>
+  html,body{margin:0;padding:0;background:#f6f6f6}
+  svg{display:block}
+  text{font-family:Pretendard,"Noto Sans CJK KR",sans-serif}
+  .ind{fill:#6d73ce}
+  .gry{fill:#666666}
+  .red{fill:#e54e4f}
+  .rep{fill:#ffffff;stroke:#666666;stroke-width:2}
+  .t{font-size:27px;font-weight:600;fill:#fff;text-anchor:middle}
+  .s{font-size:17px;font-weight:500;fill:rgba(255,255,255,.88);text-anchor:middle}
+  .tk{font-size:23px;font-weight:600;fill:#000;text-anchor:middle}
+  .sk{font-size:17px;font-weight:500;fill:#666;text-anchor:middle}
+  .box{fill:none;stroke:#666;stroke-width:1.6;stroke-dasharray:3 4}
+  .band{fill:#e4e4e4}
+  .bt{font-size:20px;font-weight:700;fill:#333}
+  .bl{font-size:22px;font-weight:700;fill:#000}
+  .a{fill:none;stroke:#000;stroke-width:2.4;marker-end:url(#ah)}
+  .ar{fill:none;stroke:#e54e4f;stroke-width:2.2;stroke-dasharray:7 6;marker-end:url(#ahr)}
+  .l{font-size:18px;font-weight:600;fill:#000}
+  .ld{font-size:17px;font-weight:500;fill:#555}
+  .lr{font-size:18px;font-weight:700;fill:#e54e4f}
+  .n{font-size:17px;font-weight:500;fill:#333}
+  .nb{font-size:18px;font-weight:700;fill:#000}
+  .m{text-anchor:middle}
+  .dot{stroke:#666;stroke-width:2}
+</style>
+</head><body>
+<svg id="fig" width="1120" height="620" viewBox="0 0 1120 620" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="ah" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M1 1L10.5 6L1 11" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="ahr" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M1 1L10.5 6L1 11" fill="none" stroke="#e54e4f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <rect width="1120" height="620" fill="#f6f6f6"/>
+
+  <rect class="band" x="20" y="14" width="1080" height="40" rx="8"/>
+  <text class="bt" x="40" y="41">저장소 A에 커밋 a2를 push → CI 토큰으로 재배포. 앱의 정적 칸은 저장소 B(main)를 쓴다</text>
+
+  <!-- ===== 전 ===== -->
+  <rect class="box" x="20" y="72" width="530" height="530" rx="6"/>
+  <text class="bl" x="40" y="106">PR #13 전</text>
+
+  <rect class="rep" x="40" y="130" width="200" height="90" rx="10"/>
+  <text class="tk" x="140" y="168">서버 칸</text>
+  <text class="sk" x="140" y="196">저장소 A · master</text>
+  <path class="a" d="M242 175H306"/>
+  <rect class="ind" x="310" y="130" width="220" height="90" rx="10"/>
+  <text class="t" x="420" y="170">a2</text>
+  <text class="s" x="420" y="198">토큰의 커밋</text>
+
+  <rect class="rep" x="40" y="260" width="200" height="90" rx="10"/>
+  <text class="tk" x="140" y="298">정적 칸</text>
+  <text class="sk" x="140" y="326">저장소 B · main</text>
+  <path class="ar" d="M242 305H306"/>
+  <rect class="red" x="310" y="260" width="220" height="90" rx="10"/>
+  <text class="t" x="420" y="300">b2</text>
+  <text class="s" x="420" y="328">B의 브랜치 최신</text>
+
+  <text class="nb" x="40" y="404">저장소 B main</text>
+  <path d="M90 450H250" stroke="#999" stroke-width="3"/>
+  <circle class="dot" cx="90" cy="450" r="11" fill="#6d73ce"/>
+  <circle class="dot" cx="250" cy="450" r="11" fill="#e54e4f"/>
+  <text class="n m" x="90" y="490">b1 라이브</text>
+  <text class="lr m" x="250" y="490">b2 아직 배포 안 함</text>
+
+  <text class="lr" x="40" y="552">A의 push가 B의 배포하지 않은 커밋까지 내보낸다</text>
+  <text class="ld" x="40" y="580">같은 저장소의 다른 브랜치 칸(예: gh-pages)도 같다</text>
+
+  <!-- ===== 후 ===== -->
+  <rect class="box" x="570" y="72" width="530" height="530" rx="6"/>
+  <text class="bl" x="590" y="106">PR #13 후</text>
+
+  <rect class="rep" x="590" y="130" width="200" height="90" rx="10"/>
+  <text class="tk" x="690" y="168">서버 칸</text>
+  <text class="sk" x="690" y="196">저장소 A · master</text>
+  <path class="a" d="M792 175H856"/>
+  <rect class="ind" x="860" y="130" width="220" height="90" rx="10"/>
+  <text class="t" x="970" y="170">a2</text>
+  <text class="s" x="970" y="198">토큰의 커밋</text>
+
+  <rect class="rep" x="590" y="260" width="200" height="90" rx="10"/>
+  <text class="tk" x="690" y="298">정적 칸</text>
+  <text class="sk" x="690" y="326">저장소 B · main</text>
+  <path class="a" d="M792 305H856"/>
+  <rect class="ind" x="860" y="260" width="220" height="90" rx="10"/>
+  <text class="t" x="970" y="300">b1</text>
+  <text class="s" x="970" y="328">지금 떠 있는 커밋</text>
+
+  <text class="nb" x="590" y="404">저장소 B main</text>
+  <path d="M640 450H800" stroke="#999" stroke-width="3"/>
+  <circle class="dot" cx="640" cy="450" r="11" fill="#6d73ce"/>
+  <circle class="dot" cx="800" cy="450" r="11" fill="#ffffff"/>
+  <text class="n m" x="640" y="490">b1 라이브</text>
+  <text class="n m" x="800" y="490">b2 그대로 남음</text>
+
+  <text class="l" x="590" y="552">토큰과 다른 칸은 라이브 source_sha로 고정</text>
+  <text class="ld" x="590" y="580">기록이 없으면 409 slot_commit_unknown</text>
+</svg>
+</body></html>

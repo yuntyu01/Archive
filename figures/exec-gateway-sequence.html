@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<title>웹 터미널 연결 순서</title>
+<!-- 렌더: 1120x760, deviceScaleFactor 2 → public/images/posts/tenant-exec-gateway/02.png -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<style>
+  html,body{margin:0;padding:0;background:#f6f6f6}
+  svg{display:block}
+  text{font-family:Pretendard,"Noto Sans CJK KR",sans-serif}
+  .ind{fill:#6d73ce}
+  .gry{fill:#666666}
+  .pur{fill:#c075e7}
+  .rep{fill:#ffffff;stroke:#666666;stroke-width:2}
+  .t{font-size:23px;font-weight:600;fill:#fff;text-anchor:middle}
+  .s{font-size:15px;font-weight:500;fill:rgba(255,255,255,.9);text-anchor:middle}
+  .tk{font-size:22px;font-weight:600;fill:#000;text-anchor:middle}
+  .sk{font-size:15px;font-weight:500;fill:#666;text-anchor:middle}
+  .life{fill:none;stroke:#999;stroke-width:1.6;stroke-dasharray:3 5}
+  .a{fill:none;stroke:#000;stroke-width:2.2;marker-end:url(#ah)}
+  .ad{fill:none;stroke:#555;stroke-width:2;stroke-dasharray:7 6;marker-end:url(#ahg)}
+  .ab{fill:none;stroke:#6d73ce;stroke-width:3;marker-end:url(#ahb);marker-start:url(#ahbs)}
+  .act{fill:#d9daf3}
+  .l{font-size:16px;font-weight:600;fill:#000;stroke:#f6f6f6;stroke-width:7px;stroke-linejoin:round;paint-order:stroke}
+  .ld{font-size:15px;font-weight:500;fill:#555;stroke:#f6f6f6;stroke-width:7px;stroke-linejoin:round;paint-order:stroke}
+  .lb{font-size:16px;font-weight:700;fill:#6d73ce}
+  .nb{font-size:17px;font-weight:700;fill:#6d73ce}
+  .m{text-anchor:middle}
+  .e{text-anchor:end}
+</style>
+</head><body>
+<svg id="fig" width="1120" height="760" viewBox="0 0 1120 760" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="ah" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M1 1L10.5 6L1 11" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="ahg" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M1 1L10.5 6L1 11" fill="none" stroke="#555" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="ahb" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M1 1L10.5 6L1 11" fill="none" stroke="#6d73ce" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="ahbs" viewBox="0 0 12 12" refX="1.5" refY="6" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M11 1L1.5 6L11 11" fill="none" stroke="#6d73ce" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <rect width="1120" height="760" fill="#f6f6f6"/>
+
+  <!-- 참여자 -->
+  <rect class="rep" x="20" y="20" width="180" height="76" rx="10"/>
+  <text class="tk" x="110" y="52">브라우저</text>
+  <text class="sk" x="110" y="78">웹 터미널</text>
+
+  <rect class="pur" x="250" y="20" width="180" height="76" rx="10"/>
+  <text class="t" x="340" y="52">core</text>
+  <text class="s" x="340" y="78">API 서버</text>
+
+  <rect class="rep" x="480" y="20" width="170" height="76" rx="10"/>
+  <text class="tk" x="565" y="52">Envoy</text>
+  <text class="sk" x="565" y="78">Cloudflare 뒤</text>
+
+  <rect class="gry" x="700" y="20" width="200" height="76" rx="10"/>
+  <text class="t" x="800" y="52">kodeploy-exec</text>
+  <text class="s" x="800" y="78">테넌트 ns</text>
+
+  <rect class="ind" x="950" y="20" width="150" height="76" rx="10"/>
+  <text class="t" x="1025" y="52">K8s API</text>
+  <text class="s" x="1025" y="78">→ 앱 Pod</text>
+
+  <path class="life" d="M110 98V720"/>
+  <path class="life" d="M340 98V360"/>
+  <path class="life" d="M565 98V560"/>
+  <path class="life" d="M800 98V720"/>
+  <path class="life" d="M1025 98V720"/>
+
+  <!-- ① 티켓 요청 -->
+  <path class="a" d="M112 140H338"/>
+  <text class="nb" x="122" y="131">①</text>
+  <text class="l" x="144" y="131">POST /apps/{id}/exec-tickets</text>
+  <text class="ld" x="122" y="164">쿠키 세션 · Origin 확인 · 앱 주인만</text>
+
+  <!-- ② core → exec 내부 문 -->
+  <path class="a" d="M342 200H798"/>
+  <text class="nb" x="352" y="191">②</text>
+  <text class="l" x="374" y="191">POST /internal/v1/tickets (8081)</text>
+  <text class="ld" x="352" y="224">HMAC-SHA256(시각, 메서드, 경로, 본문) · ±60초</text>
+  <rect class="act" x="793" y="206" width="14" height="66"/>
+  <text class="ld" x="818" y="230">32바이트 난수</text>
+  <text class="ld" x="818" y="252">sha256만 메모리에</text>
+  <text class="ld" x="818" y="274">30초 · 1회용</text>
+  <path class="ad" d="M793 290H342"/>
+  <text class="ld" x="660" y="312">티켓</text>
+
+  <!-- ③ core → 브라우저 -->
+  <path class="ad" d="M338 350H112"/>
+  <text class="nb" x="122" y="341">③</text>
+  <text class="l" x="144" y="341">ticket · url · expires_in 30</text>
+
+  <!-- ④ WebSocket -->
+  <path class="a" d="M112 420H563"/>
+  <text class="nb" x="122" y="411">④</text>
+  <text class="l" x="144" y="411">WebSocket 업그레이드 (URL에는 티켓 없음)</text>
+  <text class="ld" x="122" y="444">Sec-WebSocket-Protocol: kodeploy.exec.v1, ticket.&lt;티켓&gt;</text>
+  <rect class="act" x="558" y="452" width="14" height="38"/>
+  <text class="ld e" x="548" y="476">Cookie 헤더 제거</text>
+  <path class="a" d="M572 500H798"/>
+  <text class="l" x="584" y="491">8080 공개 문</text>
+
+  <!-- ⑤ 확인과 소비 -->
+  <rect class="act" x="793" y="506" width="14" height="60"/>
+  <text class="nb" x="818" y="530">⑤</text>
+  <text class="l" x="840" y="530">Origin 확인</text>
+  <text class="l" x="840" y="554">티켓 소비 (지움)</text>
+
+  <!-- ⑥ exec -->
+  <path class="a" d="M807 600H1023"/>
+  <text class="nb" x="818" y="591">⑥</text>
+  <text class="l" x="840" y="591">exec (exec SA)</text>
+  <text class="ld" x="818" y="624">WebSocket v5, 실패하면 SPDY</text>
+
+  <!-- ⑦ 중계 -->
+  <path class="ab" d="M114 680H796"/>
+  <path class="ab" d="M804 680H1021"/>
+  <text class="nb" x="122" y="668">⑦</text>
+  <text class="lb" x="144" y="668">바이트 그대로 중계: 0 stdin · 1 stdout · 2 stderr · 3 상태 · 4 창 크기 · 255 닫기</text>
+  <text class="ld" x="122" y="712">터미널 바이트는 core를 지나지 않는다</text>
+</svg>
+</body></html>
