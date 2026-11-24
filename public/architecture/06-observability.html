@@ -158,7 +158,7 @@ th{background:var(--bg2);font-weight:700;font-size:12.5px;white-space:nowrap;col
   <div class="row">
     <p class="row-title">설계 포인트</p>
     <ul class="ov">
-      <li><b>메트릭 저장소는 앱과 다른 노드에</b> - vmagent는 스크레이프 대상과 SA 인증 때문에 클러스터 안에 두고, VictoriaMetrics와 Grafana는 worker2에 고정했다. 앱과 플랫폼 MySQL이 몰린 worker1이 죽어도 장애 직전 메트릭을 볼 수 있다. 7~11월에는 클러스터 밖 노드(managed)에 두어 클러스터 전체 장애에도 남게 했지만, 노드 3대를 무료 한도(4 OCPU · 24GB)에 맞추면서 그 노드를 없애고 클러스터 안으로 들였다. 30일치 메트릭은 export · import로 옮겨 원본과 시점별 샘플 수까지 맞췄고, 클러스터 전체가 죽으면 같이 안 보이는 건 감수했다.</li>
+      <li><b>메트릭 저장소는 앱과 다른 노드에</b> - vmagent는 스크레이프 대상과 SA 인증 때문에 클러스터 안에 두고, VictoriaMetrics와 Grafana는 worker2에 고정했다. 앱과 플랫폼 MySQL이 몰린 worker1이 죽어도 장애 직전 메트릭을 볼 수 있다. 전에는 클러스터 밖 노드(managed)에 두어 클러스터 전체 장애에도 남게 했지만, 노드 3대를 무료 한도(4 OCPU · 24GB)에 맞추면서 그 노드를 없애고 클러스터 안으로 들였다. 30일치 메트릭은 export · import로 옮겨 원본과 시점별 샘플 수까지 맞췄고, 클러스터 전체가 죽으면 같이 안 보이는 건 감수했다.</li>
       <li><b>같은 저장소를 사용자도 본다</b> - Core가 같은 VictoriaMetrics에 PromQL을 보내 사용자에게 앱별 메트릭을 보여 준다. 운영자용과 사용자용 수집 경로를 따로 두지 않는다.</li>
       <li><b>플랫폼 DB 백업</b> - 유저 · 앱 · 배포 상태는 모두 플랫폼 MySQL에 있고, 이 DB는 worker1 로컬 디스크에 묶여 있다. 매일 dump → 무결성 검증 → R2 업로드 → 원격 해시 대조 순서로 돌고, 검증에 실패하면 올리지 않는다.</li>
       <li><b>etcd 백업</b> - 단일 마스터라 etcd를 잃으면 클러스터 상태가 통째로 사라진다. 매일 스냅샷을 로컬에 회전 보관하고 R2에도 올린다. Secret은 etcd 암호화가 걸린 채로 스냅샷에 들어간다.</li>

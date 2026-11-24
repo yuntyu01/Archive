@@ -212,7 +212,7 @@ th{background:var(--bg2);font-weight:700;font-size:12.5px;white-space:nowrap;col
       <li><b>노드 3대</b> - master · worker1 · worker2, 합계 4 OCPU · 24GB로 OCI Always Free 한도에 맞췄다. 노드에는 공인 IP가 없어서, 앱 트래픽은 NLB로, 관리 접속은 master의 cloudflared가 연 Cloudflare Tunnel로만 들어온다.</li>
       <li><b>역할 분리</b> - 공통 플랫폼(Core API · 플랫폼 MySQL · Envoy)은 worker1에, 배포 파이프라인(Argo CD · Builder)과 모니터링은 worker2에 있다. 테넌트 앱은 두 워커에 나뉘어 뜬다. master 호스트에는 클러스터 밖 일(SSH 터널, 인증서 갱신 · etcd 스냅샷 timer)만 systemd로 돈다.</li>
       <li><b>빌드</b> - BuildKit Job은 빌드마다 <span class="code">kodeploy-build</span> 네임스페이스에 생기고 끝나면 지워진다. rootless로 돌고, 사설망과 메타데이터 주소에는 닿지 못한다.</li>
-      <li><b>관측</b> - VictoriaMetrics와 Grafana는 worker2에 고정했다. 앱과 플랫폼 MySQL이 몰린 worker1과 떼어 놓아, worker1이 죽어도 장애 직전 메트릭을 볼 수 있다. 2026년 11월 클러스터 밖 노드(managed)를 없애면서 클러스터 안으로 들였고, 클러스터 전체가 죽으면 같이 안 보이는 건 감수했다.</li>
+      <li><b>관측</b> - VictoriaMetrics와 Grafana는 worker2에 고정했다. 앱과 플랫폼 MySQL이 몰린 worker1과 떼어 놓아, worker1이 죽어도 장애 직전 메트릭을 볼 수 있다. 클러스터 밖 노드(managed)를 없애면서 클러스터 안으로 들였고, 클러스터 전체가 죽으면 같이 안 보이는 건 감수했다.</li>
       <li><b>Cloudflare</b> - DNS · TLS · WAF와 커스텀 도메인(Cloudflare for SaaS)을 맡는다. 웹 콘솔은 Workers 정적 호스팅이고, 앱 오브젝트 스토리지와 플랫폼 백업은 R2에 둔다.</li>
     </ul>
   </div>

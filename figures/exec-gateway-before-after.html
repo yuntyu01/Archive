@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<title>core 탈취 시 exec가 닿는 범위, 전과 후</title>
+<!-- 렌더: 1120x720, deviceScaleFactor 2 → public/images/posts/tenant-exec-gateway/01.png -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<style>
+  html,body{margin:0;padding:0;background:#f6f6f6}
+  svg{display:block}
+  text{font-family:Pretendard,"Noto Sans CJK KR",sans-serif}
+  .ind{fill:#6d73ce}
+  .gry{fill:#666666}
+  .pur{fill:#c075e7}
+  .red{fill:#e54e4f}
+  .rep{fill:#ffffff;stroke:#666666;stroke-width:2}
+  .t{font-size:24px;font-weight:600;fill:#fff;text-anchor:middle}
+  .s{font-size:16px;font-weight:500;fill:rgba(255,255,255,.9);text-anchor:middle}
+  .tk{font-size:22px;font-weight:600;fill:#000;text-anchor:middle}
+  .sk{font-size:16px;font-weight:500;fill:#666;text-anchor:middle}
+  .chip{font-size:17px;font-weight:600;fill:#fff;text-anchor:middle}
+  .box{fill:none;stroke:#666;stroke-width:1.6;stroke-dasharray:3 4}
+  .band{fill:#e4e4e4}
+  .bt{font-size:20px;font-weight:700;fill:#333}
+  .zr{fill:none;stroke:#e54e4f;stroke-width:2;stroke-dasharray:6 5}
+  .bl{font-size:21px;font-weight:700;fill:#000}
+  .bs{font-size:17px;font-weight:600;fill:#333}
+  .a{fill:none;stroke:#000;stroke-width:2.2;marker-end:url(#ah)}
+  .l{font-size:16px;font-weight:600;fill:#000}
+  .ld{font-size:16px;font-weight:500;fill:#555}
+  .lr{font-size:18px;font-weight:700;fill:#e54e4f}
+  .m{text-anchor:middle}
+</style>
+</head><body>
+<svg id="fig" width="1120" height="720" viewBox="0 0 1120 720" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="ah" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M1 1L10.5 6L1 11" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <rect width="1120" height="720" fill="#f6f6f6"/>
+
+  <rect class="band" x="20" y="14" width="1080" height="40" rx="8"/>
+  <text class="bt" x="40" y="41">빨간 점선 = core가 탈취됐을 때 exec로 닿는 범위</text>
+
+  <!-- ===== 전 ===== -->
+  <rect class="box" x="20" y="72" width="530" height="628" rx="6"/>
+  <text class="bl" x="40" y="106">전: core가 직접 exec</text>
+
+  <rect class="pur" x="40" y="130" width="210" height="90" rx="10"/>
+  <text class="t" x="145" y="168">core</text>
+  <text class="s" x="145" y="196">DB 비밀번호를 명령에</text>
+
+  <path class="a" d="M252 175H306"/>
+  <text class="l m" x="279" y="163">exec</text>
+
+  <rect class="gry" x="310" y="130" width="220" height="90" rx="10"/>
+  <text class="t" x="420" y="168">K8s API</text>
+  <text class="s" x="420" y="196">테넌트 롤의 pods/exec</text>
+
+  <path class="a" d="M420 222V284"/>
+
+  <rect class="zr" x="36" y="294" width="498" height="320" rx="8"/>
+
+  <!-- ns 세 개 -->
+  <rect class="box" x="56" y="314" width="458" height="84" rx="6"/>
+  <text class="bs" x="72" y="362">ns 1</text>
+  <rect class="ind" x="150" y="328" width="110" height="56" rx="8"/><text class="chip" x="205" y="362">앱</text>
+  <rect class="ind" x="272" y="328" width="110" height="56" rx="8"/><text class="chip" x="327" y="362">DB</text>
+  <rect class="ind" x="394" y="328" width="110" height="56" rx="8"/><text class="chip" x="449" y="362">Redis</text>
+
+  <rect class="box" x="56" y="412" width="458" height="84" rx="6"/>
+  <text class="bs" x="72" y="460">ns 2</text>
+  <rect class="ind" x="150" y="426" width="110" height="56" rx="8"/><text class="chip" x="205" y="460">앱</text>
+  <rect class="ind" x="272" y="426" width="110" height="56" rx="8"/><text class="chip" x="327" y="460">DB</text>
+  <rect class="ind" x="394" y="426" width="110" height="56" rx="8"/><text class="chip" x="449" y="460">Redis</text>
+
+  <rect class="box" x="56" y="510" width="458" height="84" rx="6"/>
+  <text class="bs" x="72" y="558">ns …</text>
+  <rect class="ind" x="150" y="524" width="110" height="56" rx="8"/><text class="chip" x="205" y="558">앱</text>
+  <rect class="ind" x="272" y="524" width="110" height="56" rx="8"/><text class="chip" x="327" y="558">DB</text>
+  <rect class="ind" x="394" y="524" width="110" height="56" rx="8"/><text class="chip" x="449" y="558">Redis</text>
+
+  <text class="lr" x="40" y="648">모든 테넌트의 모든 Pod에서 아무 명령</text>
+  <text class="ld" x="40" y="676">웹 터미널 · DB 콘솔 · 덤프 · 복원이 모두 같은 exec 권한</text>
+
+  <!-- ===== 후 ===== -->
+  <rect class="box" x="570" y="72" width="530" height="628" rx="6"/>
+  <text class="bl" x="590" y="106">후: 테넌트별 게이트웨이</text>
+
+  <rect class="pur" x="590" y="130" width="200" height="90" rx="10"/>
+  <text class="t" x="690" y="168">core</text>
+  <text class="s" x="690" y="196">티켓 발급 · HMAC 서명</text>
+
+  <rect class="rep" x="880" y="130" width="200" height="90" rx="10"/>
+  <text class="tk" x="980" y="168">브라우저</text>
+  <text class="sk" x="980" y="196">웹 터미널</text>
+
+  <path class="a" d="M690 222V296H790V340"/>
+  <text class="l" x="704" y="258">8081 내부 문</text>
+  <text class="ld" x="704" y="280">서명한 요청</text>
+  <path class="a" d="M980 222V296H880V340"/>
+  <text class="l" x="966" y="258" text-anchor="end">8080 공개 문</text>
+  <text class="ld" x="966" y="280" text-anchor="end">티켓 (Envoy 경유)</text>
+
+  <rect class="box" x="590" y="318" width="490" height="296" rx="6"/>
+  <text class="bs" x="606" y="600">테넌트 ns마다 하나</text>
+
+  <rect class="zr" x="676" y="330" width="318" height="246" rx="8"/>
+
+  <rect class="gry" x="690" y="344" width="290" height="92" rx="10"/>
+  <text class="t" x="835" y="382">kodeploy-exec</text>
+  <text class="s" x="835" y="410">정해진 작업만 · Secret 권한 없음</text>
+
+  <path class="a" d="M835 438V478"/>
+  <text class="l" x="848" y="464">exec (자기 ns)</text>
+
+  <rect class="ind" x="690" y="482" width="290" height="80" rx="10"/>
+  <text class="t" x="835" y="532">앱 · DB · Redis</text>
+
+  <text class="lr" x="590" y="648">서명 키로 정해진 작업만: 셸 · SQL · 덤프 · 복원</text>
+  <text class="ld" x="590" y="676">토큰만 새면 K8s exec는 403, 8081은 core Pod에서만 열림</text>
+</svg>
+</body></html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<title>웹 터미널 연결 순서</title>
+<!-- 렌더: 1120x776, deviceScaleFactor 2 → public/images/posts/tenant-exec-gateway/02.png -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<style>
+  html,body{margin:0;padding:0;background:#f6f6f6}
+  svg{display:block}
+  text{font-family:Pretendard,"Noto Sans CJK KR",sans-serif}
+  .ind{fill:#6d73ce}
+  .gry{fill:#666666}
+  .pur{fill:#c075e7}
+  .rep{fill:#ffffff;stroke:#666666;stroke-width:2}
+  .t{font-size:23px;font-weight:600;fill:#fff;text-anchor:middle}
+  .s{font-size:15px;font-weight:500;fill:rgba(255,255,255,.9);text-anchor:middle}
+  .tk{font-size:22px;font-weight:600;fill:#000;text-anchor:middle}
+  .sk{font-size:15px;font-weight:500;fill:#666;text-anchor:middle}
+  .life{fill:none;stroke:#999;stroke-width:1.6;stroke-dasharray:3 5}
+  .a{fill:none;stroke:#000;stroke-width:2.2;marker-end:url(#ah)}
+  .ad{fill:none;stroke:#555;stroke-width:2;stroke-dasharray:7 6;marker-end:url(#ahg)}
+  .ab{fill:none;stroke:#6d73ce;stroke-width:3;marker-end:url(#ahb);marker-start:url(#ahbs)}
+  .act{fill:#d9daf3}
+  .zone{fill:none;stroke:#b5b5b5;stroke-width:1.6;stroke-dasharray:6 6}
+  .zt{font-size:18px;font-weight:700;fill:#222;stroke:#f6f6f6;stroke-width:8px;stroke-linejoin:round;paint-order:stroke}
+  .zs{font-size:18px;font-weight:600;fill:#6d73ce;stroke:#f6f6f6;stroke-width:8px;stroke-linejoin:round;paint-order:stroke}
+  .pill{fill:#ffffff;stroke:#999;stroke-width:1.4}
+  .pt{font-size:13px;font-weight:600;fill:#444;text-anchor:middle}
+  .l{font-size:17px;font-weight:600;fill:#000;stroke:#f6f6f6;stroke-width:7px;stroke-linejoin:round;paint-order:stroke}
+  .ld{font-size:15px;font-weight:500;fill:#555;stroke:#f6f6f6;stroke-width:7px;stroke-linejoin:round;paint-order:stroke}
+  .p{font-size:13px;font-weight:500;fill:#888;stroke:#f6f6f6;stroke-width:6px;stroke-linejoin:round;paint-order:stroke}
+  .lb{font-size:17px;font-weight:700;fill:#6d73ce;stroke:#f6f6f6;stroke-width:7px;stroke-linejoin:round;paint-order:stroke}
+  .nb{font-size:17px;font-weight:700;fill:#6d73ce;stroke:#f6f6f6;stroke-width:7px;stroke-linejoin:round;paint-order:stroke}
+  .e{text-anchor:end}
+</style>
+</head><body>
+<svg id="fig" width="1120" height="776" viewBox="0 0 1120 776" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="ah" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M1 1L10.5 6L1 11" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="ahg" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M1 1L10.5 6L1 11" fill="none" stroke="#555" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="ahb" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M1 1L10.5 6L1 11" fill="none" stroke="#6d73ce" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="ahbs" viewBox="0 0 12 12" refX="1.5" refY="6" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M11 1L1.5 6L11 11" fill="none" stroke="#6d73ce" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <rect width="1120" height="776" fill="#f6f6f6"/>
+
+  <!-- 구역 -->
+  <rect class="zone" x="8" y="136" width="1104" height="262" rx="12"/>
+  <rect class="zone" x="8" y="414" width="1104" height="348" rx="12"/>
+
+  <!-- 세로선 (core는 1구역에서 끝남) -->
+  <path class="life" d="M110 98V752"/>
+  <path class="life" d="M340 98V396"/>
+  <path class="life" d="M565 98V752"/>
+  <path class="life" d="M800 98V752"/>
+  <path class="life" d="M1025 98V752"/>
+
+  <!-- 참여자 -->
+  <rect class="rep" x="20" y="20" width="180" height="76" rx="10"/>
+  <text class="tk" x="110" y="52">브라우저</text>
+  <text class="sk" x="110" y="78">웹 터미널</text>
+
+  <rect class="pur" x="250" y="20" width="180" height="76" rx="10"/>
+  <text class="t" x="340" y="52">core</text>
+  <text class="s" x="340" y="78">API 서버</text>
+  <rect class="pill" x="284" y="104" width="112" height="24" rx="12"/>
+  <text class="pt" x="340" y="121">exec 권한 없음</text>
+
+  <rect class="rep" x="480" y="20" width="170" height="76" rx="10"/>
+  <text class="tk" x="565" y="52">Envoy</text>
+  <text class="sk" x="565" y="78">Cloudflare 뒤</text>
+
+  <rect class="gry" x="700" y="20" width="200" height="76" rx="10"/>
+  <text class="t" x="800" y="52">kodeploy-exec</text>
+  <text class="s" x="800" y="78">테넌트 ns</text>
+  <rect class="pill" x="758" y="104" width="84" height="24" rx="12"/>
+  <text class="pt" x="800" y="121">exec 권한</text>
+
+  <rect class="ind" x="950" y="20" width="150" height="76" rx="10"/>
+  <text class="t" x="1025" y="52">K8s API</text>
+  <text class="s" x="1025" y="78">→ 대상 컨테이너</text>
+
+  <!-- 1구역: 티켓 받기 -->
+  <text class="zt" x="26" y="164">1. 티켓 받기 <tspan class="zs">(core를 거침)</tspan></text>
+
+  <!-- ① -->
+  <path class="a" d="M112 210H338"/>
+  <text class="nb" x="122" y="200">①</text>
+  <text class="l" x="144" y="200">티켓 요청</text>
+  <text class="p" x="122" y="232">POST /apps/{id}/exec-tickets</text>
+
+  <!-- ② -->
+  <path class="a" d="M342 268H798"/>
+  <text class="nb" x="352" y="258">②</text>
+  <text class="l" x="374" y="258">서명한 요청 (내부 문 8081)</text>
+  <text class="p" x="352" y="290">POST /internal/v1/tickets</text>
+  <rect class="act" x="793" y="274" width="14" height="60"/>
+  <text class="ld" x="818" y="298">32바이트 난수</text>
+  <text class="ld" x="818" y="321">30초 · 1회용</text>
+  <path class="ad" d="M793 346H342"/>
+  <text class="ld" x="600" y="338">티켓</text>
+
+  <!-- ③ -->
+  <path class="ad" d="M338 380H112"/>
+  <text class="nb" x="122" y="371">③</text>
+  <text class="l" x="144" y="371">티켓 전달</text>
+
+  <!-- 2구역: 연결과 중계 -->
+  <text class="zt" x="26" y="442">2. 연결과 중계 <tspan class="zs">(core를 거치지 않음)</tspan></text>
+
+  <!-- ④ -->
+  <path class="a" d="M112 492H563"/>
+  <text class="nb" x="122" y="482">④</text>
+  <text class="l" x="144" y="482">WebSocket 연결 (티켓은 헤더에)</text>
+  <rect class="act" x="558" y="498" width="14" height="44"/>
+  <text class="ld e" x="548" y="526">Cookie 헤더 제거</text>
+  <path class="a" d="M572 552H798"/>
+  <text class="p" x="584" y="544">8080 공개 문</text>
+
+  <!-- ⑤ -->
+  <rect class="act" x="793" y="560" width="14" height="56"/>
+  <text class="nb" x="818" y="583">⑤</text>
+  <text class="l" x="840" y="583">티켓 확인 후 지움</text>
+  <text class="ld" x="840" y="606">Origin 확인</text>
+
+  <!-- ⑥ -->
+  <path class="a" d="M807 652H1023"/>
+  <text class="nb" x="818" y="642">⑥</text>
+  <text class="l" x="840" y="642">exec</text>
+
+  <!-- ⑦ -->
+  <path class="ab" d="M114 726H796"/>
+  <path class="ab" d="M804 726H1021"/>
+  <text class="nb" x="122" y="714">⑦</text>
+  <text class="lb" x="144" y="714">바이트 그대로 중계</text>
+</svg>
+</body></html>
