@@ -117,8 +117,8 @@ body.show.idle{cursor:none}
 .hrow{display:flex;align-items:flex-end;justify-content:space-between;gap:24px}
 .more{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;padding-bottom:8px;max-width:760px}
 .more span{font-size:16.5px;font-weight:700;color:var(--body);background:var(--bg2);border-radius:8px;padding:6px 12px}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:26px 28px}
-.shot .win img{width:698px;height:263px;object-fit:contain;background:#fff}
+.g2{display:grid;grid-template-columns:repeat(2,560px);justify-content:center;gap:16px 56px}
+.shot .win img{width:560px;height:276px;object-fit:cover;object-position:left top;background:#fff}
 /* 확대 판: 클릭할 때마다 그 자리에서 한 장씩 커진다. 마지막으로 켜진 판만 보이고 앞 판은 숨는다 */
 .zp{position:absolute;inset:-10px -40px;background:rgba(255,255,255,.93);z-index:3}
 .zp[data-step]:not(.on){transform:none;pointer-events:none}
@@ -409,7 +409,7 @@ Dockerfile이 없어도 자동으로 빌드합니다.
   <div class="crumb">KoDeploy · <span class="pg"></span></div>
   <h2>시연</h2>
   <div class="vframe" id="vframe">
-    <video id="demo" src="demo.mp4?v=3782eda1" muted playsinline preload="auto"></video>
+    <video id="demo" src="demo.mp4?v=53405bda" muted playsinline preload="auto"></video>
     <div class="vmiss">
       <div class="t">시연 영상 자리</div>
       <div class="d">이 HTML 파일 옆에 <code>demo.mp4</code>를 두면 여기서 자동 재생돼요</div>
@@ -430,23 +430,23 @@ Dockerfile이 없어도 자동으로 빌드합니다.
     <div class="more"><span>롤백</span><span>환경변수</span><span>DB 백업 · 복원</span><span>커스텀 도메인</span><span>push 자동 배포</span><span>AI 진단</span><span>앱 공유</span></div></div>
   <div class="body" style="top:196px;bottom:30px">
     <div class="g2">
-      <div class="shot"><div class="win"><img src="img/log.webp?v=f9814bcf" alt="Dailo 서버에서 수집된 실시간 Hibernate 로그"></div><div class="cap">실시간 서버 로그</div></div>
-      <div class="shot"><div class="win"><img src="img/terminal.webp?v=4e100a2e" alt="Dailo MySQL 콘솔에서 SHOW TABLES로 조회한 테이블 93개"></div><div class="cap">MySQL 콘솔</div></div>
-      <div class="shot"><div class="win"><img src="img/monitoring.webp?v=38eae052" alt="Dailo CPU 사용량 그래프와 메모리, 초당 요청 수, 응답 시간"></div><div class="cap">모니터링 <small>CPU · 메모리 · RPS · 응답시간</small></div></div>
-      <div class="shot"><div class="win"><img src="img/storage.webp?v=b9bcf74d" alt="Dailo 스토리지의 파일 126개와 행사 이미지 미리보기"></div><div class="cap">스토리지 <small>앱 전용 R2 버킷</small></div></div>
+      <div class="shot"><div class="win"><img src="img/ops-terminal.webp?v=528b5320" alt="Dailo 앱 서버의 웹 터미널과 실시간 로그"></div><div class="cap">웹 터미널 · 실시간 로그 <small>앱 셸 · 로그 검색</small></div></div>
+      <div class="shot"><div class="win"><img src="img/ops-db.webp?v=6f05ac22" alt="Dailo MySQL에서 SQL로 member 테이블을 조회한 화면 (개인정보는 가림)"></div><div class="cap">데이터베이스 <small>SQL 실행 · 테이블 탐색</small></div></div>
+      <div class="shot"><div class="win"><img src="img/ops-storage.webp?v=2d37c298" alt="Dailo 스토리지의 파일 126개와 미리보기"></div><div class="cap">스토리지 <small>앱 전용 R2 버킷</small></div></div>
+      <div class="shot"><div class="win"><img src="img/ops-monitoring.webp?v=c06f1dc8" alt="Dailo 메모리 사용량 그래프와 CPU, 초당 요청 수, 응답 시간"></div><div class="cap">모니터링 <small>CPU · 메모리 · RPS · 응답시간</small></div></div>
     </div>
-    <!-- 확대 판 (--dx·--dy: 격자 칸 가운데 - 확대 위치, --s: 칸 폭 698 / 확대 폭) -->
-    <div class="zp" data-step="1"><div class="zi" style="--dx:-362px;--dy:-157px;--s:.765"><img src="img/log.webp?v=f9814bcf" style="width:912px;height:344px" alt=""></div><div class="zc">실시간 서버 로그<small>검색 · 레벨 필터</small></div></div>
-    <div class="zp" data-step="2"><div class="zi" style="--dx:366px;--dy:-157px;--s:.516"><img src="img/terminal.webp?v=4e100a2e" style="width:1354px;height:510px" alt=""></div><div class="zc">MySQL 콘솔<small>SQL · 테이블 탐색 · 터미널</small></div></div>
-    <div class="zp" data-step="3"><div class="zi" style="--dx:-362px;--dy:177px;--s:.516"><img src="img/monitoring.webp?v=38eae052" style="width:1354px;height:510px" alt=""></div><div class="zc">모니터링<small>CPU · 메모리 · RPS · 응답시간</small></div></div>
-    <div class="zp" data-step="4"><div class="zi" style="--dx:366px;--dy:177px;--s:.57"><img src="img/storage.webp?v=b9bcf74d" style="width:1224px;height:460px" alt=""></div><div class="zc">스토리지<small>앱 전용 R2 버킷</small></div></div>
+    <!-- 확대 판 (--dx·--dy: 격자 칸 가운데 - 확대 위치, --s: 칸 폭 560 / 확대 폭 1160) -->
+    <div class="zp" data-step="1"><div class="zi" style="--dx:-307px;--dy:-151px;--s:.4828"><img src="img/ops-terminal.webp?v=528b5320" style="width:1160px;height:571px" alt=""></div><div class="zc">웹 터미널 · 실시간 로그<small>앱 셸 · 로그 검색</small></div></div>
+    <div class="zp" data-step="2"><div class="zi" style="--dx:309px;--dy:-151px;--s:.4828"><img src="img/ops-db.webp?v=6f05ac22" style="width:1160px;height:571px" alt=""></div><div class="zc">데이터베이스<small>SQL 실행 · 테이블 탐색</small></div></div>
+    <div class="zp" data-step="3"><div class="zi" style="--dx:-307px;--dy:187px;--s:.4828"><img src="img/ops-storage.webp?v=2d37c298" style="width:1160px;height:571px" alt=""></div><div class="zc">스토리지<small>앱 전용 R2 버킷</small></div></div>
+    <div class="zp" data-step="4"><div class="zi" style="--dx:309px;--dy:187px;--s:.4828"><img src="img/ops-monitoring.webp?v=c06f1dc8" style="width:1160px;height:571px" alt=""></div><div class="zc">모니터링<small>CPU · 메모리 · RPS · 응답시간</small></div></div>
   </div>
   <aside class="notes">
 배포만 하고 끝이 아니라 운영에 필요한 것도 웹에서 다 됩니다. 서버에 직접 들어갈 일이 없습니다. 실제로 운영 중인 다일로 화면입니다. (네 장 한눈에)
-→ 클릭: 실시간 서버 로그. 앱이 찍는 로그가 그대로 올라오고, 검색과 필터가 됩니다.
-→ 클릭: MySQL 콘솔. 브라우저에서 SQL을 바로 실행하고 테이블을 둘러봅니다.
+→ 클릭: 웹 터미널과 실시간 로그. 브라우저에서 앱 셸에 바로 들어가고, 옆에서 앱 로그가 올라옵니다.
+→ 클릭: 데이터베이스. 브라우저에서 SQL을 실행하고 테이블을 둘러봅니다.
+→ 클릭: 스토리지. 앱마다 전용 R2 버킷이 붙고, 올라간 파일을 미리 보고 내려받습니다.
 → 클릭: 모니터링. CPU, 메모리, 초당 요청 수, 응답시간을 그래프로 봅니다.
-→ 클릭: 스토리지. 앱마다 전용 R2 버킷이 붙고, 올라간 파일을 미리 봅니다.
 위쪽에 있는 것처럼 롤백, 환경변수, DB 백업과 복원, 커스텀 도메인, push하면 자동 배포, AI 진단, 팀원 공유도 됩니다.
   </aside>
 </section>
