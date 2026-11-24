@@ -1,0 +1,14 @@
+{
+  "name": "capstone-demo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "login": "node record.mjs login",
+    "record": "node record.mjs record",
+    "edit": "node record.mjs edit",
+    "all": "node record.mjs all"
+  },
+  "dependencies": {
+    "playwright": "^1.48.0"
+  }
+}
