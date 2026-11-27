@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<title>운영 기록으로 본 대기 시간과 폴링</title>
+<!-- 렌더: 1120x600, deviceScaleFactor 2 → public/images/posts/commit-pinned-ci-deploy/04.png -->
+<!-- 원자료: 2026-10-30 14:12 ~ 11-22 15:42 UTC build_records, 빌드가 모두 running에 닿은 배포 43회 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<style>
+  html,body{margin:0;padding:0;background:#f6f6f6}
+  svg{display:block}
+  text{font-family:Pretendard,"Noto Sans CJK KR",sans-serif}
+  .band{fill:#e4e4e4}
+  .bt{font-size:20px;font-weight:700;fill:#333}
+  .bl{font-size:21px;font-weight:700;fill:#000}
+  .ld{font-size:16px;font-weight:500;fill:#555}
+  .dot{fill:#666666}
+  .ax{font-size:16px;font-weight:500;fill:#555}
+  .axl{fill:none;stroke:#999;stroke-width:1.6}
+  .tk{stroke:#999;stroke-width:1.6}
+  .vg{stroke:#999;stroke-width:1.6;stroke-dasharray:5 5}
+  .vq{stroke:#6d73ce;stroke-width:2.6}
+  .vl{font-size:17px;font-weight:700;fill:#6d73ce}
+  .vlg{font-size:16px;font-weight:600;fill:#555}
+  .vs{font-size:15px;font-weight:500;fill:#666}
+  .pc{stroke:#000;stroke-width:1.4;stroke-dasharray:2 4}
+  .pt{font-size:16px;font-weight:700;fill:#000}
+  .m{text-anchor:middle}
+  .rl{font-size:18px;font-weight:600;fill:#000}
+  .bg{fill:#999999}
+  .bq{fill:#6d73ce}
+  .bv{font-size:18px;font-weight:700;fill:#000}
+  .bd{font-size:17px;font-weight:500;fill:#333}
+  .hd{font-size:16px;font-weight:700;fill:#555}
+</style>
+</head><body>
+<svg id="fig" width="1120" height="600" viewBox="0 0 1120 600" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1120" height="600" fill="#f6f6f6"/>
+  <rect class="band" x="20" y="14" width="1080" height="40" rx="8"/>
+  <text class="bt" x="40" y="41">운영 기록의 배포 43회 (Argo CD로 옮긴 뒤)</text>
+
+  <text class="bl" x="40" y="86">배포 한 번의 대기</text>
+  <text class="ld" x="40" y="110">요청부터 모두 running + settle 60초</text>
+  <path class="axl" d="M110 246H1060"/>
+  <path class="tk" d="M110.0 246V254"/><text class="ax m" x="110.0" y="274">0분</text>
+  <path class="tk" d="M300.0 246V254"/><text class="ax m" x="300.0" y="274">5분</text>
+  <path class="tk" d="M490.0 246V254"/><text class="ax m" x="490.0" y="274">10분</text>
+  <path class="tk" d="M680.0 246V254"/><text class="ax m" x="680.0" y="274">15분</text>
+  <path class="tk" d="M870.0 246V254"/><text class="ax m" x="870.0" y="274">20분</text>
+  <path class="tk" d="M1060.0 246V254"/><text class="ax m" x="1060.0" y="274">25분</text>
+  <path class="vg" d="M490.0 96V246"/>
+  <text class="vlg m" x="490.0" y="88">10분</text>
+  <path class="vq" d="M680.0 96V246"/>
+  <text class="vl m" x="680.0" y="88">CI 토큰 15분</text>
+  <path class="vg" d="M870.0 96V246"/>
+  <text class="vlg m" x="870.0" y="88">20분</text>
+  <path class="vg" d="M1003.0 96V246"/>
+  <text class="vlg m" x="1003.0" y="88">서버 상한 약 23분</text>
+
+  <path class="pc" d="M223.4 156V246"/><text class="pt" x="229.4" y="150">중앙값 3.0분</text>
+  <path class="pc" d="M361.4 182V246"/><text class="pt" x="367.4" y="176">p95 6.6분</text>
+  <path class="pc" d="M421.0 208V246"/><text class="pt" x="427.0" y="202">최대 8.2분</text>
+  <circle class="dot" cx="176.7" cy="238" r="4.4"/>
+  <circle class="dot" cx="185.8" cy="238" r="4.4"/>
+  <circle class="dot" cx="186.2" cy="238" r="4.4"/>
+  <circle class="dot" cx="195.3" cy="238" r="4.4"/>
+  <circle class="dot" cx="186.2" cy="228" r="4.4"/>
+  <circle class="dot" cx="195.7" cy="238" r="4.4"/>
+  <circle class="dot" cx="204.8" cy="238" r="4.4"/>
+  <circle class="dot" cx="195.7" cy="228" r="4.4"/>
+  <circle class="dot" cx="204.8" cy="228" r="4.4"/>
+  <circle class="dot" cx="195.7" cy="218" r="4.4"/>
+  <circle class="dot" cx="204.8" cy="218" r="4.4"/>
+  <circle class="dot" cx="195.7" cy="208" r="4.4"/>
+  <circle class="dot" cx="204.8" cy="208" r="4.4"/>
+  <circle class="dot" cx="195.7" cy="198" r="4.4"/>
+  <circle class="dot" cx="204.8" cy="198" r="4.4"/>
+  <circle class="dot" cx="195.7" cy="188" r="4.4"/>
+  <circle class="dot" cx="204.8" cy="188" r="4.4"/>
+  <circle class="dot" cx="195.7" cy="178" r="4.4"/>
+  <circle class="dot" cx="204.8" cy="178" r="4.4"/>
+  <circle class="dot" cx="205.2" cy="238" r="4.4"/>
+  <circle class="dot" cx="214.7" cy="238" r="4.4"/>
+  <circle class="dot" cx="223.8" cy="238" r="4.4"/>
+  <circle class="dot" cx="224.2" cy="238" r="4.4"/>
+  <circle class="dot" cx="233.7" cy="238" r="4.4"/>
+  <circle class="dot" cx="243.2" cy="238" r="4.4"/>
+  <circle class="dot" cx="252.3" cy="238" r="4.4"/>
+  <circle class="dot" cx="243.2" cy="228" r="4.4"/>
+  <circle class="dot" cx="252.3" cy="228" r="4.4"/>
+  <circle class="dot" cx="262.1" cy="238" r="4.4"/>
+  <circle class="dot" cx="271.6" cy="238" r="4.4"/>
+  <circle class="dot" cx="280.9" cy="238" r="4.4"/>
+  <circle class="dot" cx="271.6" cy="228" r="4.4"/>
+  <circle class="dot" cx="280.9" cy="228" r="4.4"/>
+  <circle class="dot" cx="271.6" cy="218" r="4.4"/>
+  <circle class="dot" cx="280.9" cy="218" r="4.4"/>
+  <circle class="dot" cx="281.1" cy="238" r="4.4"/>
+  <circle class="dot" cx="290.4" cy="238" r="4.4"/>
+  <circle class="dot" cx="281.1" cy="228" r="4.4"/>
+  <circle class="dot" cx="290.4" cy="228" r="4.4"/>
+  <circle class="dot" cx="290.6" cy="238" r="4.4"/>
+  <circle class="dot" cx="357.1" cy="238" r="4.4"/>
+  <circle class="dot" cx="414.1" cy="238" r="4.4"/>
+  <circle class="dot" cx="423.4" cy="238" r="4.4"/>
+  <text class="vs" x="1060" y="296" text-anchor="end">CLI 시간 제한 25분 = 축 끝</text>
+
+  <path d="M20 318H1100" stroke="#d6d6d6" stroke-width="1.4"/>
+  <text class="bl" x="40" y="356">폴링 세 안을 같은 기록으로 재생</text>
+  <text class="hd" x="360" y="378">배포 한 번당 상태 조회 수 (평균)</text>
+  <text class="hd" x="1060" y="378" text-anchor="end">running을 알아채기까지</text>
+  <text class="rl" x="340" y="410" text-anchor="end">2초 고정</text>
+  <rect class="bg" x="360" y="388" width="475.0" height="32" rx="5"/>
+  <text class="bv" x="845.0" y="410">142.5회</text>
+  <text class="bd" x="1060" y="410" text-anchor="end">평균 0.5초, 최대 1초</text>
+  <text class="rl" x="340" y="472" text-anchor="end">10초 고정</text>
+  <rect class="bg" x="360" y="450" width="100.7" height="32" rx="5"/>
+  <text class="bv" x="470.7" y="472">30.2회</text>
+  <text class="bd" x="1060" y="472" text-anchor="end">평균 4.3초, 최대 9초</text>
+  <text class="rl" x="340" y="534" text-anchor="end">지금 (2초에서 10초까지 두 배)</text>
+  <rect class="bq" x="360" y="512" width="131.0" height="32" rx="5"/>
+  <text class="bv" x="501.0" y="534">39.3회</text>
+  <text class="bd" x="1060" y="534" text-anchor="end">평균 4.6초, 최대 9초</text>
+</svg>
+</body></html>
